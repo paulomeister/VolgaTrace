@@ -1,61 +1,61 @@
-# Modulo Kafka — Pipeline de transacciones en tiempo real
+# Kafka Module — Real-time Transaction Pipeline
 
-Capa de ingesta del proyecto: broker Kafka en modo KRaft, productores Python
-de transacciones simuladas (online y POS), y herramientas de inspeccion.
+Ingestion layer of the project: Kafka broker in KRaft mode, Python producers
+for simulated transactions (online and POS), and inspection tools.
 
-Cubre los requerimientos **R2.1** y **R2.2**.
+Covers requirements **R2.1** and **R2.2**.
 
-## Requisitos
+## Requirements
 
-- Docker y Docker Compose v2
+- Docker and Docker Compose v2
 - Python 3.10+
-- 4 GB de RAM libre
+- 4 GB of free RAM
 
-## Arranque rapido
+## Quick Start
 
 ```bash
-# 1. Levantar Kafka + crear topics + Kafka UI (un solo comando)
+# 1. Start Kafka + create topics + Kafka UI (single command)
 docker compose up -d
 
-# 2. Verificar que todo este sano (debe verse "healthy" en kafka,
-#    "exited (0)" en kafka-init, y "Up" en kafka-ui)
+# 2. Verify everything is healthy (kafka should show "healthy",
+#    kafka-init "exited (0)", and kafka-ui "Up")
 docker compose ps
 
-# 3. Instalar dependencias Python
+# 3. Install Python dependencies
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-# 4. Ejecutar los productores en dos terminales distintas
+# 4. Run the producers in two separate terminals
 python producers/producer_online.py --rate 50
 python producers/producer_pos.py    --rate 50
 ```
 
-Total combinado: 100 eventos/segundo, cumple R2.2.
+Combined total: 100 events/second, meets R2.2.
 
-> **Nota:** los topics se crean automaticamente al levantar el stack mediante
-> el servicio `kafka-init`. Es one-shot: corre, crea los 4 topics con su
-> retencion de 24h, y se apaga (estado `exited (0)`). Es idempotente, asi que
-> volver a ejecutar `docker compose up -d` no falla aunque los topics ya existan.
+> **Note:** Topics are created automatically when the stack starts via the
+> `kafka-init` service. It is one-shot: it runs, creates the 4 topics with
+> 24h retention, and shuts down (state `exited (0)`). It is idempotent, so
+> running `docker compose up -d` again won't fail even if the topics already exist.
 
-## Verificacion
+## Verification
 
 ### Kafka UI
 
-Abrir [http://localhost:8080](http://localhost:8080).
+Open [http://localhost:8080](http://localhost:8080).
 
-- En **Topics**: deben aparecer los 4 topics con mensajes entrando.
-- En cada topic: contador de mensajes en aumento, retention.ms = 86400000.
-- En **Messages** de un topic: payloads JSON visibles.
+- Under **Topics**: all 4 topics should appear with incoming messages.
+- Per topic: rising message counter, retention.ms = 86400000.
+- Under **Messages** of a topic: JSON payloads visible.
 
-### Consumidor de prueba (CLI)
+### Test Consumer (CLI)
 
 ```bash
 python producers/consumer_test.py --topic transactions-online
 python producers/consumer_test.py --topic transactions-pos --from-beginning
 ```
 
-### Listado por linea de comandos
+### Command-line Listing
 
 ```bash
 docker exec kafka kafka-topics.sh --bootstrap-server localhost:9094 --list
@@ -63,51 +63,51 @@ docker exec kafka kafka-topics.sh --bootstrap-server localhost:9094 \
   --describe --topic transactions-online
 ```
 
-## Estructura
+## Structure
 
 ```
 .
 ├── docker-compose.yml          # Kafka (KRaft) + kafka-init + Kafka UI
 ├── producers/
-│   ├── schema.py               # Esquema del evento (contrato compartido)
-│   ├── producer_online.py      # Productor canal online
-│   ├── producer_pos.py         # Productor canal POS
-│   └── consumer_test.py        # Validacion local (no entregable)
+│   ├── schema.py               # Event schema (shared contract)
+│   ├── producer_online.py      # Online channel producer
+│   ├── producer_pos.py         # POS channel producer
+│   └── consumer_test.py        # Local validation (not deliverable)
 ├── scripts/
-│   └── create_topics.sh        # Utilidad opcional (no requerida)
+│   └── create_topics.sh        # Optional utility (not required)
 └── docs/
-    └── contract.md             # Contrato para el equipo de Flink
+    └── contract.md             # Contract for the Flink team
 ```
 
 ## Topics
 
-| Topic | Particiones | Retencion | Quien escribe | Quien lee |
+| Topic | Partitions | Retention | Writer | Reader |
 |---|---|---|---|---|
-| `transactions-online` | 3 | 24 h | producer_online.py | Jobs de Flink |
-| `transactions-pos` | 3 | 24 h | producer_pos.py | Jobs de Flink |
-| `alerts` | 3 | 24 h | Job Flink anomalias | Dashboard, notificadores |
-| `transactions-dlq` | 3 | 24 h | Jobs Flink (errores) | Inspeccion manual |
+| `transactions-online` | 3 | 24 h | producer_online.py | Flink jobs |
+| `transactions-pos` | 3 | 24 h | producer_pos.py | Flink jobs |
+| `alerts` | 3 | 24 h | Flink anomaly job | Dashboard, notifiers |
+| `transactions-dlq` | 3 | 24 h | Flink jobs (errors) | Manual inspection |
 
-Para anadir o modificar un topic, editar la variable `TOPICS` del servicio
-`kafka-init` en `docker-compose.yml`. Formato: `nombre:particiones:retencion_ms`.
+To add or modify a topic, edit the `TOPICS` variable of the `kafka-init`
+service in `docker-compose.yml`. Format: `name:partitions:retention_ms`.
 
-## Recrear topics manualmente
+## Recreating Topics Manually
 
-Si necesitas recrear los topics sin tumbar Kafka, hay dos formas:
+If you need to recreate topics without stopping Kafka, there are two options:
 
 ```bash
-# A) Volver a correr solo el servicio de inicializacion
+# A) Re-run only the init service
 docker compose up kafka-init
 
-# B) Usar el script utilitario (mismo efecto)
+# B) Use the utility script (same effect)
 ./scripts/create_topics.sh
 ```
 
-## Parar todo
+## Stop Everything
 
 ```bash
-docker compose down            # detiene contenedores
-docker compose down -v         # detiene y borra volumen (elimina mensajes)
+docker compose down            # stop containers
+docker compose down -v         # stop and delete volume (removes messages)
 ```
 
-## Para mas detalle del contrato de mensajes ver `docs/contract.md`.
+## For more details on the message contract see `docs/contract.md`.

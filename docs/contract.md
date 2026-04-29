@@ -1,33 +1,33 @@
-# Contrato de mensajes — equipo de ingesta ↔ equipo de Flink
- 
-Este documento es la fuente de verdad sobre los topics, claves y formato de
-mensajes que el modulo de Kafka publica. Cualquier cambio aqui debe acordarse en equipo.
- 
-## Bootstrap servers
- 
-| Origen del consumidor | Direccion |
+# Message Contract — Ingestion team ↔ Flink team
+
+This document is the source of truth for the topics, keys, and message format
+published by the Kafka module. Any change here must be agreed upon by the team.
+
+## Bootstrap Servers
+
+| Consumer origin | Address |
 |---|---|
-| Servicio dentro de Docker (Flink, conectores, etc.) | `kafka:9094` |
-| Script o herramienta fuera de Docker (PC) | `localhost:9092` |
- 
+| Service inside Docker (Flink, connectors, etc.) | `kafka:9094` |
+| Script or tool outside Docker (local machine) | `localhost:9092` |
+
 ## Topics
- 
-| Topic | Particiones | Retencion (ms) | Key |
+
+| Topic | Partitions | Retention (ms) | Key |
 |---|---|---|---|
 | `transactions-online` | 3 | 86 400 000 | `card_id` |
 | `transactions-pos` | 3 | 86 400 000 | `card_id` |
 | `alerts` | 3 | 86 400 000 | `card_id` |
-| `transactions-dlq` | 3 | 86 400 000 | original (puede faltar) |
- 
-**Particionamiento por `card_id`**: garantiza que todos los eventos de la misma
-tarjeta caen en la misma particion. Esto es necesario para detectar patrones
-con orden temporal (por ejemplo, "3 rechazos seguidos + 1 aprobacion").
- 
-## Esquema del evento de transaccion
- 
-Todos los mensajes en `transactions-online` y `transactions-pos` siguen este
-formato. Codificacion: JSON UTF-8.
- 
+| `transactions-dlq` | 3 | 86 400 000 | original (may be missing) |
+
+**Partitioning by `card_id`**: guarantees that all events from the same card
+land on the same partition. This is required to detect patterns with temporal
+order (e.g., "3 consecutive declines + 1 approval").
+
+## Transaction Event Schema
+
+All messages in `transactions-online` and `transactions-pos` follow this format.
+Encoding: JSON UTF-8.
+
 ```json
 {
   "transaction_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -44,44 +44,46 @@ formato. Codificacion: JSON UTF-8.
   "country": "CO"
 }
 ```
- 
-### Campos
- 
-| Campo | Tipo | Notas |
+
+### Fields
+
+| Field | Type | Notes |
 |---|---|---|
-| `transaction_id` | string (UUID v4) | Unico por evento |
-| `card_id` | string | Formato `card_NNNNN` (5 digitos) |
-| `event_timestamp` | string (ISO 8601, UTC) | Hora del evento "real" |
-| `produced_at` | string (ISO 8601, UTC) | Hora en que el productor publico — usar para medir latencia E2E (R2.7) |
-| `channel` | enum | `"online"` o `"pos"` |
-| `amount` | float | Positivo, dos decimales |
+| `transaction_id` | string (UUID v4) | Unique per event |
+| `card_id` | string | Format `card_NNNNN` (5 digits) |
+| `event_timestamp` | string (ISO 8601, UTC) | Timestamp of the "real" event |
+| `produced_at` | string (ISO 8601, UTC) | Timestamp when the producer published — use to measure E2E latency (R2.7) |
+| `channel` | enum | `"online"` or `"pos"` |
+| `amount` | float | Positive, two decimal places |
 | `currency` | enum | `"COP"`, `"USD"`, `"EUR"` |
 | `status` | enum | `"approved"`, `"declined"`, `"pending"` |
-| `merchant_name` | string | Nombre del comercio |
+| `merchant_name` | string | Merchant name |
 | `merchant_category` | enum | `groceries`, `restaurants`, `fuel`, `electronics`, `clothing`, `travel`, `entertainment`, `health` |
-| `city` | string | Ciudad de la transaccion |
+| `city` | string | Transaction city |
 | `country` | string | ISO-3166 alpha-2 (`"CO"`) |
- 
-## Anomalias inyectadas (para R2.4)
- 
-El generador inyecta deliberadamente patrones detectables:
- 
-1. **Monto inusualmente alto** (~5%): `amount` entre 10 000 y 50 000.
-2. **Rafaga de la misma tarjeta** (~3%): 5 transacciones seguidas con el
-   mismo `card_id` en un intervalo corto.
-3. **Transacciones rechazadas** (~12%): `status="declined"` en distribucion
-   normal — combinado con el orden por particion permite detectar la regla
-   "3 rechazos + 1 aprobacion".
-## Mensajes invalidos para la DLQ (para R2.8)
- 
-El ~1% de los mensajes producidos son intencionalmente mal formados (campos
-faltantes, tipos incorrectos). El job de Flink debe:
- 
-1. Detectarlos al deserializar.
-2. Reenviarlos a `transactions-dlq`.
-3. NO detener el pipeline.
-Un mensaje invalido tipico:
- 
+
+## Injected Anomalies (for R2.4)
+
+The generator deliberately injects detectable patterns:
+
+1. **Unusually high amount** (~5%): `amount` between 10,000 and 50,000.
+2. **Same-card burst** (~3%): 5 consecutive transactions with the same
+   `card_id` within a short interval.
+3. **Declined transactions** (~12%): `status="declined"` in normal distribution
+   — combined with partition ordering, enables detecting the rule
+   "3 declines + 1 approval".
+
+## Invalid Messages for the DLQ (for R2.8)
+
+~1% of produced messages are intentionally malformed (missing fields, wrong
+types). The Flink job must:
+
+1. Detect them during deserialization.
+2. Forward them to `transactions-dlq`.
+3. NOT stop the pipeline.
+
+A typical invalid message:
+
 ```json
 {
   "transaction_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -89,11 +91,11 @@ Un mensaje invalido tipico:
   "broken": true
 }
 ```
- 
-## Esquema sugerido para el topic `alerts`
- 
-(Esto lo decide el rol de anomalias, pero deja una propuesta como base.)
- 
+
+## Suggested Schema for the `alerts` Topic
+
+(Decided by the anomaly detection role, but provided here as a baseline.)
+
 ```json
 {
   "alert_id": "uuid",
