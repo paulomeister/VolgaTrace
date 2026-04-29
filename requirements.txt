@@ -1,0 +1,13 @@
+# kafka-python 2.2+ es la primera linea con soporte oficial para Python 3.14.
+# Es Python puro, no requiere compilacion ni librerias del sistema.
+kafka-python==2.2.15
+ 
+# lz4 >=4.4.5 incluye el fix para Python 3.14 (circular import en lz4.frame).
+# Versiones anteriores (4.4.4 y previas) fallan con:
+#   "cannot import name '_compression' from partially initialized module 'lz4.frame'"
+# Ver: https://github.com/python-lz4/python-lz4/pull/303
+lz4>=4.4.5
+ 
+# Generador de datos sinteticos realistas (nombres, ciudades, comercios).
+Faker==30.3.0
+ 
