@@ -1,0 +1,109 @@
+# Message Contract — Ingestion team ↔ Flink team
+
+This document is the source of truth for the topics, keys, and message format
+published by the Kafka module. Any change here must be agreed upon by the team.
+
+## Bootstrap Servers
+
+| Consumer origin | Address |
+|---|---|
+| Service inside Docker (Flink, connectors, etc.) | `kafka:9094` |
+| Script or tool outside Docker (local machine) | `localhost:9092` |
+
+## Topics
+
+| Topic | Partitions | Retention (ms) | Key |
+|---|---|---|---|
+| `transactions-online` | 3 | 86 400 000 | `card_id` |
+| `transactions-pos` | 3 | 86 400 000 | `card_id` |
+| `alerts` | 3 | 86 400 000 | `card_id` |
+| `transactions-dlq` | 3 | 86 400 000 | original (may be missing) |
+
+**Partitioning by `card_id`**: guarantees that all events from the same card
+land on the same partition. This is required to detect patterns with temporal
+order (e.g., "3 consecutive declines + 1 approval").
+
+## Transaction Event Schema
+
+All messages in `transactions-online` and `transactions-pos` follow this format.
+Encoding: JSON UTF-8.
+
+```json
+{
+  "transaction_id": "550e8400-e29b-41d4-a716-446655440000",
+  "card_id": "4532015112830366",
+  "event_timestamp": "2026-01-15T14:30:22.123456+00:00",
+  "produced_at":     "2026-01-15T14:30:22.124001+00:00",
+  "channel": "ONLINE",
+  "amount": 142.50,
+  "currency": "COP",
+  "status": "APPROVED",
+  "merchant_name": "Tienda Andina S.A.S.",
+  "merchant_category": "groceries",
+  "city": "Bogota",
+  "country": "CO"
+}
+```
+
+### Fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `transaction_id` | string (UUID v4) | Unique per event |
+| `card_id` | string | Numeric string, 13–19 digits (16 standard) |
+| `event_timestamp` | string (ISO 8601, UTC) | Timestamp of the "real" event |
+| `produced_at` | string (ISO 8601, UTC) | Timestamp when the producer published — use to measure E2E latency (R2.7) |
+| `channel` | enum | `"ONLINE"` or `"POS"` |
+| `amount` | float | Positive, two decimal places |
+| `currency` | enum | `"COP"`, `"USD"`, `"EUR"` |
+| `status` | enum | `"APPROVED"`, `"REJECTED"`, `"PENDING"` |
+| `merchant_name` | string | Merchant name |
+| `merchant_category` | enum | `groceries`, `restaurants`, `fuel`, `electronics`, `clothing`, `travel`, `entertainment`, `health` |
+| `city` | string | Transaction city |
+| `country` | string | ISO-3166 alpha-2 (`"CO"`) |
+
+## Injected Anomalies (for R2.4)
+
+The generator deliberately injects detectable patterns:
+
+1. **Unusually high amount** (~5%): `amount` between 10,000 and 50,000.
+2. **Same-card burst** (~3%): 5 consecutive transactions with the same
+   `card_id` within a short interval.
+3. **Rejected transactions** (~12%): `status="REJECTED"` in normal distribution
+   — combined with partition ordering, enables detecting the rule
+   "3 rejections + 1 approval".
+
+## Invalid Messages for the DLQ (for R2.8)
+
+~1% of produced messages are intentionally malformed (missing fields, wrong
+types). The Flink job must:
+
+1. Detect them during deserialization.
+2. Forward them to `transactions-dlq`.
+3. NOT stop the pipeline.
+
+A typical invalid message:
+
+```json
+{
+  "transaction_id": "550e8400-e29b-41d4-a716-446655440000",
+  "amount": "not-a-number",
+  "broken": true
+}
+```
+
+## Suggested Schema for the `alerts` Topic
+
+(Decided by the anomaly detection role, but provided here as a baseline.)
+
+```json
+{
+  "alert_id": "uuid",
+  "card_id": "4532015112830366",
+  "alert_type": "HIGH_AMOUNT | BURST | DECLINED_PATTERN",
+  "severity": "low | medium | high",
+  "triggered_at": "2026-01-15T14:30:25Z",
+  "source_transaction_ids": ["uuid1", "uuid2", ...],
+  "details": { "...": "..." }
+}
+```
