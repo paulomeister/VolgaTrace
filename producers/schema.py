@@ -22,12 +22,12 @@ random.seed(42)
 # -----------------------------------------------------------------------------
 # Tipos permitidos
 # -----------------------------------------------------------------------------
-Channel = Literal["online", "pos"]
-Status = Literal["approved", "declined", "pending"]
+Channel = Literal["ONLINE", "POS"]
+Status = Literal["APPROVED", "REJECTED", "PENDING"]
 Currency = Literal["COP", "USD", "EUR"]
 
 # Pool pequeño a proposito: facilita ver anomalias por tarjeta en Flink.
-CARD_POOL: list[str] = [f"card_{i:05d}" for i in range(1, 501)]   # 500 tarjetas
+CARD_POOL: list[str] = [str(random.randint(1_000_000_000_000_000, 9_999_999_999_999_999)) for _ in range(500)]
 
 MERCHANT_CATEGORIES = [
   "groceries", "restaurants", "fuel", "electronics",
@@ -100,7 +100,7 @@ class TransactionGenerator:
             amount = round(random.uniform(5, 500), 2)
 
         status: Status = random.choices(
-            ["approved", "declined", "pending"],
+            ["APPROVED", "REJECTED", "PENDING"],
             weights=[85, 12, 3],
             k=1,
         )[0]

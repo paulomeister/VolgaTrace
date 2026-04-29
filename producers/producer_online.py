@@ -91,7 +91,7 @@ def main() -> int:
         log.error("No se pudo conectar al broker %s: %s", args.bootstrap, e)
         return 1
 
-    generator = TransactionGenerator(channel="online")
+    generator = TransactionGenerator(channel="ONLINE")
     period = 1.0 / args.rate
 
     sent = 0

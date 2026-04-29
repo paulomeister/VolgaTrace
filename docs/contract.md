@@ -31,13 +31,13 @@ Encoding: JSON UTF-8.
 ```json
 {
   "transaction_id": "550e8400-e29b-41d4-a716-446655440000",
-  "card_id": "card_00123",
+  "card_id": "4532015112830366",
   "event_timestamp": "2026-01-15T14:30:22.123456+00:00",
   "produced_at":     "2026-01-15T14:30:22.124001+00:00",
-  "channel": "online",
+  "channel": "ONLINE",
   "amount": 142.50,
   "currency": "COP",
-  "status": "approved",
+  "status": "APPROVED",
   "merchant_name": "Tienda Andina S.A.S.",
   "merchant_category": "groceries",
   "city": "Bogota",
@@ -50,13 +50,13 @@ Encoding: JSON UTF-8.
 | Field | Type | Notes |
 |---|---|---|
 | `transaction_id` | string (UUID v4) | Unique per event |
-| `card_id` | string | Format `card_NNNNN` (5 digits) |
+| `card_id` | string | Numeric string, 13–19 digits (16 standard) |
 | `event_timestamp` | string (ISO 8601, UTC) | Timestamp of the "real" event |
 | `produced_at` | string (ISO 8601, UTC) | Timestamp when the producer published — use to measure E2E latency (R2.7) |
-| `channel` | enum | `"online"` or `"pos"` |
+| `channel` | enum | `"ONLINE"` or `"POS"` |
 | `amount` | float | Positive, two decimal places |
 | `currency` | enum | `"COP"`, `"USD"`, `"EUR"` |
-| `status` | enum | `"approved"`, `"declined"`, `"pending"` |
+| `status` | enum | `"APPROVED"`, `"REJECTED"`, `"PENDING"` |
 | `merchant_name` | string | Merchant name |
 | `merchant_category` | enum | `groceries`, `restaurants`, `fuel`, `electronics`, `clothing`, `travel`, `entertainment`, `health` |
 | `city` | string | Transaction city |
@@ -69,9 +69,9 @@ The generator deliberately injects detectable patterns:
 1. **Unusually high amount** (~5%): `amount` between 10,000 and 50,000.
 2. **Same-card burst** (~3%): 5 consecutive transactions with the same
    `card_id` within a short interval.
-3. **Declined transactions** (~12%): `status="declined"` in normal distribution
+3. **Rejected transactions** (~12%): `status="REJECTED"` in normal distribution
    — combined with partition ordering, enables detecting the rule
-   "3 declines + 1 approval".
+   "3 rejections + 1 approval".
 
 ## Invalid Messages for the DLQ (for R2.8)
 
@@ -99,7 +99,7 @@ A typical invalid message:
 ```json
 {
   "alert_id": "uuid",
-  "card_id": "card_00123",
+  "card_id": "4532015112830366",
   "alert_type": "HIGH_AMOUNT | BURST | DECLINED_PATTERN",
   "severity": "low | medium | high",
   "triggered_at": "2026-01-15T14:30:25Z",
