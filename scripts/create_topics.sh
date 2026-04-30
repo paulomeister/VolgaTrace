@@ -13,6 +13,7 @@ RETENTION_MS="${RETENTION_MS:-86400000}"   # 24h
 TOPICS=(
   "transactions-online:${RETENTION_MS}"
   "transactions-pos:${RETENTION_MS}"
+  "transactions-aggregated:${RETENTION_MS}"
   "alerts:${RETENTION_MS}"
   "transactions-dlq:${RETENTION_MS}"
 )
