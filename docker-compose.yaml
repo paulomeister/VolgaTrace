@@ -58,6 +58,7 @@ services:
       TOPICS: >-
         transactions-online:3:86400000
         transactions-pos:3:86400000
+        transactions-aggregated:3:86400000
         alerts:3:86400000
         transactions-dlq:3:86400000
       BOOTSTRAP: kafka:9094
@@ -108,7 +109,10 @@ services:
 
   # Processing Layer: Master node
   flink-jobmanager:
-    image: flink:1.18.1-scala_2.12-java17
+    build:
+      context: ./flink
+      dockerfile: Dockerfile
+    image: volgatrace-flink:1.18.1
     container_name: flink-jobmanager
     restart: unless-stopped
     ports:
@@ -125,12 +129,17 @@ services:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
+    volumes:
+      - ./flink:/opt/flink/usrlib
     networks:
       - streaming-net
 
   # Processing Layer: Worker node
   flink-taskmanager:
-    image: flink:1.18.1-scala_2.12-java17
+    build:
+      context: ./flink
+      dockerfile: Dockerfile
+    image: volgatrace-flink:1.18.1
     container_name: flink-taskmanager
     restart: unless-stopped
     depends_on:
