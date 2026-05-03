@@ -44,6 +44,34 @@ services:
       start_period: 10s
     networks:
       - streaming-net
+      
+  # Flink SQL Aggregation Job - one-shot automatic submitter
+  flink-aggregation-job:
+    image: volgatrace-flink:1.18.1
+    container_name: flink-aggregation-job
+    restart: "no"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      flink-jobmanager:
+        condition: service_healthy
+      flink-taskmanager:
+        condition: service_started
+    volumes:
+      - ./flink:/opt/flink/usrlib
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo "Waiting for Flink and Kafka to be ready..."
+        sleep 15
+        echo "Submitting Flink aggregation SQL job..."
+        ./bin/sql-client.sh -f /opt/flink/usrlib/aggregation.sql
+        echo "Flink aggregation job submitted successfully."
+    networks:
+      - streaming-net
 
   # one-shot: crea los topics y termina
   kafka-init:
@@ -106,6 +134,7 @@ services:
         condition: service_completed_successfully
     networks:
       - streaming-net
+
 
   # Processing Layer: Master node
   flink-jobmanager:
