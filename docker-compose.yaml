@@ -126,8 +126,7 @@ services:
       start_period: 15s
     environment:
       # RPC address for TaskManager connection
-      - |
-        FLINK_PROPERTIES=
+      FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
     volumes:
       - ./flink:/opt/flink/usrlib
@@ -148,8 +147,7 @@ services:
     command: taskmanager
     environment:
       # Connect to JobManager and configure task slots
-      - |
-        FLINK_PROPERTIES=
+      FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 2
     networks:
@@ -175,7 +173,7 @@ services:
       retries: 5
       start_period: 20s
     volumes:
-      - kafka_data:/usr/share/elasticsearch/data
+      - es_data:/usr/share/elasticsearch/data
     networks:
       - streaming-net
 
@@ -200,6 +198,8 @@ services:
 
 volumes:
   kafka_data:
+    driver: local
+  es_data:
     driver: local
 
 networks:
