@@ -1,5 +1,6 @@
 package com.streaming.fraud;
 
+import com.streaming.fraud.deserializer.AlertSerializer;
 import com.streaming.fraud.deserializer.EventDeserializer;
 import com.streaming.fraud.functions.AmountAnomalyFn;
 import com.streaming.fraud.functions.BurstAlertWindowFn;
@@ -11,6 +12,8 @@ import org.apache.flink.cep.CEP;
 import org.apache.flink.cep.PatternStream;
 import org.apache.flink.cep.pattern.Pattern;
 import org.apache.flink.cep.pattern.conditions.SimpleCondition;
+import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
+import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema;
@@ -77,6 +80,22 @@ public class AnomaliesJob {
         DataStream<Alert> freqAlerts = keyedStream
                 .window(SlidingEventTimeWindows.of(Time.minutes(1), Time.seconds(10)))
                         .process(new BurstAlertWindowFn());
+
+        // alerts union
+        DataStream<Alert> allAlerts = amountAlerts
+                .union(cepAlerts)
+                .union(freqAlerts);
+
+        KafkaSink<Alert> sink = KafkaSink.<Alert>builder()
+                        .setBootstrapServers("localhost:9094")
+                        .setRecordSerializer(KafkaRecordSerializationSchema.builder()
+                                .setTopic("alerts")
+                                .setValueSerializationSchema(new AlertSerializer())
+                                .build())
+                        .build();
+
+        allAlerts.sinkTo(sink);
+        allAlerts.print("Sinking to Kafka:alerts");
 
         env.execute("Fraud Detection, Anomalies Job"); // this throws Exception
 
