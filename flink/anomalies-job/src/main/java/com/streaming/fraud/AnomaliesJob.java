@@ -2,13 +2,13 @@ package com.streaming.fraud;
 
 import com.streaming.fraud.deserializer.EventDeserializer;
 import com.streaming.fraud.functions.AmountAnomalyFn;
+import com.streaming.fraud.functions.BurstAlertWindowFn;
 import com.streaming.fraud.functions.CepAlertProcessFn;
 import com.streaming.fraud.model.Alert;
 import com.streaming.fraud.model.Event;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.cep.CEP;
 import org.apache.flink.cep.PatternStream;
-import org.apache.flink.cep.functions.PatternProcessFunction;
 import org.apache.flink.cep.pattern.Pattern;
 import org.apache.flink.cep.pattern.conditions.SimpleCondition;
 import org.apache.flink.connector.kafka.source.KafkaSource;
@@ -17,14 +17,10 @@ import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDe
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.util.Collector;
 
 import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class AnomaliesJob {
 
@@ -76,6 +72,11 @@ public class AnomaliesJob {
 
         // search for coincidences and trigger alerts
         DataStream<Alert> cepAlerts = patternStream.process(new CepAlertProcessFn());
+
+        // burst rule
+        DataStream<Alert> freqAlerts = keyedStream
+                .window(SlidingEventTimeWindows.of(Time.minutes(1), Time.seconds(10)))
+                        .process(new BurstAlertWindowFn());
 
         env.execute("Fraud Detection, Anomalies Job"); // this throws Exception
 
