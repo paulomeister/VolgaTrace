@@ -2,6 +2,7 @@ package com.streaming.fraud;
 
 import com.streaming.fraud.deserializer.EventDeserializer;
 import com.streaming.fraud.functions.AmountAnomalyFn;
+import com.streaming.fraud.functions.CepAlertProcessFn;
 import com.streaming.fraud.model.Alert;
 import com.streaming.fraud.model.Event;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -74,24 +75,7 @@ public class AnomaliesJob {
         PatternStream<Event> patternStream = CEP.pattern(keyedStream, declinedPattern);
 
         // search for coincidences and trigger alerts
-        DataStream<Alert> cepAlerts = patternStream.process(
-                new PatternProcessFunction<Event, Alert>() {
-                    @Override
-                    public void processMatch(Map<String, List<Event>> match, Context ctx, Collector<Alert> out) throws Exception {
-
-                        Event approveEvent = match.get("approve").get(0);
-
-                        out.collect(new Alert(
-                                UUID.randomUUID().toString(),
-                                approveEvent.getCardId(),
-                                "DECLINED_PATTERN",
-                                Instant.now(),
-                                approveEvent.getTransactionId()
-                        ));
-
-                    }
-                }
-        );
+        DataStream<Alert> cepAlerts = patternStream.process(new CepAlertProcessFn());
 
         env.execute("Fraud Detection, Anomalies Job"); // this throws Exception
 
