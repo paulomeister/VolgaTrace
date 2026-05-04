@@ -69,41 +69,57 @@ class TransactionGenerator:
         channel: Channel,
         anomaly_rate_high_amount: float = 0.05,
         anomaly_rate_burst: float = 0.03,
+        anomaly_rate_declined_pattern: float = 0.02,
         invalid_message_rate: float = 0.01,
     ) -> None:
         self.channel = channel
         self.anomaly_rate_high_amount = anomaly_rate_high_amount
         self.anomaly_rate_burst = anomaly_rate_burst
+        self.anomaly_rate_declined_pattern = anomaly_rate_declined_pattern
         self.invalid_message_rate = invalid_message_rate
         self._burst_card: Optional[str] = None
         self._burst_remaining: int = 0
+        self._declined_pattern_card: Optional[str] = None
+        self._declined_pattern_statuses: list[Status] = []
 
     def next_event(self) -> tuple[str, dict]:
         """Retorna (card_id, event_dict). Puede devolver un mensaje roto (DLQ, R2.8)."""
-        if random.random() < self.invalid_message_rate:
+        if (
+            not self._declined_pattern_statuses
+            and random.random() < self.invalid_message_rate
+        ):
             return self._invalid_event()
 
+        # patron explicito: 3 rechazos consecutivos y luego 1 aprobacion.
+        # Se emite con la misma tarjeta para que Flink lo detecte ordenado por particion.
+        if self._declined_pattern_statuses:
+            assert self._declined_pattern_card is not None
+            card_id = self._declined_pattern_card
+            status = self._declined_pattern_statuses.pop(0)
+            if not self._declined_pattern_statuses:
+                self._declined_pattern_card = None
+        elif random.random() < self.anomaly_rate_declined_pattern:
+            card_id = random.choice(CARD_POOL)
+            self._declined_pattern_card = card_id
+            self._declined_pattern_statuses = ["REJECTED", "REJECTED", "APPROVED"]
+            status = "REJECTED"
         # rafaga: varias transacciones seguidas con la misma tarjeta
-        if self._burst_remaining > 0:
+        elif self._burst_remaining > 0:
             card_id = self._burst_card  # type: ignore[assignment]
             self._burst_remaining -= 1
+            status = self._random_status()
         else:
             card_id = random.choice(CARD_POOL)
             if random.random() < self.anomaly_rate_burst:
                 self._burst_card = card_id
                 self._burst_remaining = 4
+            status = self._random_status()
 
         # 5% de los montos son anomalamente altos
         if random.random() < self.anomaly_rate_high_amount:
             amount = round(random.uniform(10_000, 50_000), 2)
         else:
             amount = round(random.uniform(5, 500), 2)
-
-        status: Status = random.choices(
-            ["APPROVED", "REJECTED", "PENDING"],
-            weights=[85, 12, 3],
-            k=1,
-        )[0]
 
         now = datetime.now(timezone.utc)
 
@@ -126,6 +142,14 @@ class TransactionGenerator:
 
         # card_id como key → misma tarjeta siempre va a la misma particion
         return card_id, event.to_dict()
+
+    @staticmethod
+    def _random_status() -> Status:
+        return random.choices(
+            ["APPROVED", "REJECTED", "PENDING"],
+            weights=[85, 12, 3],
+            k=1,
+        )[0]
 
     @staticmethod
     def _invalid_event() -> tuple[str, dict]:
