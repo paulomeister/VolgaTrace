@@ -66,7 +66,7 @@ public class AmountAnomalyFn extends KeyedProcessFunction<String, Event, Alert> 
             out.collect(new Alert(
                     UUID.randomUUID().toString(),
                     event.getCardId(),
-                    "HIGH AMOUNT",
+                    "HIGH_AMOUNT",
                     Instant.now(),
                     event.getTransactionId()
             ));
@@ -79,16 +79,16 @@ public class AmountAnomalyFn extends KeyedProcessFunction<String, Event, Alert> 
         Double currentMean = meanState.value();
         Double currentM2 = m2State.value();
 
-        long n = (currentCount == 0) ? 0L : currentCount;
-        double mu = (currentMean == 0) ? 0L : currentMean;
-        double m2 = (currentM2 == 0) ? 0L : currentM2;
+        long n = (currentCount == null) ? 0L : currentCount;
+        double mu = (currentMean == null) ? 0L : currentMean;
+        double m2 = (currentM2 == null) ? 0L : currentM2;
 
         // update
         n++;
         double delta = amount - mu;
         mu += delta / n;
         double delta2 = amount - mu;
-        m2 = delta * delta2;
+        m2 += delta * delta2;
 
         countState.update(n);
         meanState.update(mu);
@@ -106,7 +106,7 @@ public class AmountAnomalyFn extends KeyedProcessFunction<String, Event, Alert> 
                 out.collect(new Alert(
                         UUID.randomUUID().toString(),
                         event.getCardId(),
-                        "HIGH AMOUNT",
+                        "HIGH_AMOUNT",
                         Instant.now(),
                         event.getTransactionId()
                 ));
