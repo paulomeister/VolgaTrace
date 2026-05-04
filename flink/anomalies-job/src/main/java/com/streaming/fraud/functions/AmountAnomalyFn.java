@@ -55,6 +55,9 @@ public class AmountAnomalyFn extends KeyedProcessFunction<String, Event, Alert> 
         if ("USD".equalsIgnoreCase(currency) && amount > 5_000) {
             isStaticAnomaly = true;
         }
+        else if ("EUR".equalsIgnoreCase(currency) && amount > 5_000) {
+            isStaticAnomaly = true;
+        }
         else if ("COP".equalsIgnoreCase(currency) && amount > 15_000_000) {
             isStaticAnomaly = true;
         }
