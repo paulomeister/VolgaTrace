@@ -27,7 +27,7 @@ Status = Literal["APPROVED", "REJECTED", "PENDING"]
 Currency = Literal["COP", "USD", "EUR"]
 
 # Pool pequeño a proposito: facilita ver anomalias por tarjeta en Flink.
-CARD_POOL: list[str] = [str(random.randint(1_000_000_000_000_000, 9_999_999_999_999_999)) for _ in range(500)]
+CARD_POOL: list[str] = [str(random.randint(1_000_000_000_000_000, 9_999_999_999_999_999)) for _ in range(200)]
 
 MERCHANT_CATEGORIES = [
   "groceries", "restaurants", "fuel", "electronics",
