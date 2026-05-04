@@ -51,15 +51,12 @@ public class AmountAnomalyFn extends KeyedProcessFunction<String, Event, Alert> 
 
         // code for static amount threshold business rule enforcement
         boolean isStaticAnomaly = false;
-        String staticReason = "";
 
         if ("USD".equalsIgnoreCase(currency) && amount > 5_000) {
             isStaticAnomaly = true;
-            staticReason = "Transaction amount exceeds static amount threshold of 5000 USD";
         }
         else if ("COP".equalsIgnoreCase(currency) && amount > 15_000_000) {
             isStaticAnomaly = true;
-            staticReason = "Transaction amount exceeds static amount threshold of 5000 USD";
         }
 
         if (isStaticAnomaly) {
