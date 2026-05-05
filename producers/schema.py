@@ -67,8 +67,8 @@ class TransactionGenerator:
     def __init__(
         self,
         channel: Channel,
-        anomaly_rate_high_amount: float = 0.05,
-        anomaly_rate_burst: float = 0.03,
+        anomaly_rate_high_amount: float = 0.01,
+        anomaly_rate_burst: float = 0.01,
         anomaly_rate_declined_pattern: float = 0.02,
         invalid_message_rate: float = 0.01,
     ) -> None:
@@ -112,7 +112,7 @@ class TransactionGenerator:
             card_id = random.choice(CARD_POOL)
             if random.random() < self.anomaly_rate_burst:
                 self._burst_card = card_id
-                self._burst_remaining = 4
+                self._burst_remaining = 5
             status = self._random_status()
 
         # 5% de los montos son anomalamente altos
