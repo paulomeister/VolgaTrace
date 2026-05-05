@@ -1,0 +1,375 @@
+PASO A PASO PARA CORRER EL MÓDULO DE AGREGACIÓN FLINK — VOLGATRACE
+Proyecto: Sistema de Procesamiento de Transacciones Financieras en Tiempo Real
+
+============================================================
+0. REQUISITOS PREVIOS
+============================================================
+
+Antes de empezar, asegúrate de tener instalado:
+
+- Docker Desktop
+- Python
+- Git / GitHub Desktop
+- El repositorio VolgaTrace descargado en:
+
+C:\University\Github\VolgaTrace
+
+La rama usada para esta parte es:
+
+feat/flink-agruegacion
+
+
+============================================================
+1. ABRIR LA TERMINAL EN LA CARPETA DEL PROYECTO
+============================================================
+
+Abre PowerShell o CMD y ejecuta:
+
+cd C:\University\Github\VolgaTrace
+
+
+============================================================
+2. LEVANTAR TODO EL STACK CON DOCKER
+============================================================
+
+Ejecuta:
+
+docker compose up -d --build
+
+Este comando levanta:
+
+- Kafka
+- Kafka UI
+- Flink JobManager
+- Flink TaskManager
+- Elasticsearch
+- Kibana
+
+Espera a que termine el proceso.
+
+
+============================================================
+3. VERIFICAR QUE LOS CONTENEDORES ESTÉN CORRIENDO
+============================================================
+
+Ejecuta:
+
+docker compose ps
+
+Debes ver servicios como:
+
+- kafka
+- kafka-ui
+- flink-jobmanager
+- flink-taskmanager
+- elasticsearch
+- kibana
+
+Kafka y Flink deberían aparecer como activos o saludables.
+
+
+============================================================
+4. CREAR Y ACTIVAR EL ENTORNO VIRTUAL DE PYTHON
+============================================================
+
+Si todavía no existe el entorno virtual, créalo con:
+
+py -m venv .venv
+
+Luego actívalo:
+
+.\.venv\Scripts\Activate.ps1
+
+Si PowerShell no deja activar el entorno, puedes probar desde CMD o ejecutar:
+
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+Y luego otra vez:
+
+.\.venv\Scripts\Activate.ps1
+
+
+============================================================
+5. INSTALAR LAS DEPENDENCIAS DE PYTHON
+============================================================
+
+Con el entorno virtual activo, ejecuta:
+
+py -m pip install -r requirements.txt
+
+Esto instala las librerías necesarias para los productores, como:
+
+- kafka-python
+- lz4
+- Faker
+
+
+============================================================
+6. CORRER EL PRODUCTOR ONLINE
+============================================================
+
+Abre una terminal nueva.
+
+Entra al proyecto:
+
+cd C:\University\Github\VolgaTrace
+
+Activa el entorno virtual:
+
+.\.venv\Scripts\Activate.ps1
+
+Ejecuta el productor ONLINE:
+
+python producers\producer_online.py --rate 60
+
+Este productor envía eventos al topic:
+
+transactions-online
+
+Déjalo corriendo.
+
+
+============================================================
+7. CORRER EL PRODUCTOR POS
+============================================================
+
+Abre otra terminal nueva.
+
+Entra al proyecto:
+
+cd C:\University\Github\VolgaTrace
+
+Activa el entorno virtual:
+
+.\.venv\Scripts\Activate.ps1
+
+Ejecuta el productor POS:
+
+python producers\producer_pos.py --rate 60
+
+Este productor envía eventos al topic:
+
+transactions-pos
+
+Déjalo corriendo.
+
+NOTA:
+Se usa --rate 60 para asegurar que entre ambos productores se supere la meta de 100 eventos por segundo.
+
+
+============================================================
+8. EJECUTAR EL JOB DE AGREGACIÓN EN FLINK
+============================================================
+
+Abre otra terminal nueva.
+
+Entra al proyecto:
+
+cd C:\University\Github\VolgaTrace
+
+Ejecuta el Job SQL de Flink:
+
+docker compose exec flink-jobmanager ./bin/sql-client.sh -f /opt/flink/usrlib/aggregation.sql
+
+Si todo sale bien, debe aparecer algo parecido a:
+
+SQL update statement has been successfully submitted to the cluster:
+Job ID: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+Eso significa que el Job de Flink quedó corriendo.
+
+
+============================================================
+9. ESPERAR 1 MINUTO
+============================================================
+
+El Job usa una ventana tumbling de 1 minuto.
+
+Por eso debes esperar mínimo 60 segundos para que Flink cierre la primera ventana y publique resultados agregados.
+
+
+============================================================
+10. VERIFICAR LOS RESULTADOS AGREGADOS
+============================================================
+
+Después de esperar mínimo 1 minuto, ejecuta:
+
+docker compose exec kafka kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic transactions-aggregated --from-beginning --max-messages 10
+
+Si funciona, deberían salir mensajes JSON parecidos a este:
+
+{
+  "window_start": "2026-04-30 02:11:00.000",
+  "window_end": "2026-04-30 02:12:00.000",
+  "channel": "ONLINE",
+  "currency": "COP",
+  "merchant_category": "restaurants",
+  "city": "Bogota",
+  "transaction_count": 10,
+  "approved_count": 8,
+  "rejected_count": 1,
+  "pending_count": 1,
+  "avg_amount": 250.55,
+  "max_amount": 1000.00
+}
+
+Si aparecen estos JSON, la agregación está funcionando correctamente.
+
+
+============================================================
+11. ABRIR LAS INTERFACES WEB
+============================================================
+
+Kafka UI:
+
+http://localhost:8080
+
+Sirve para ver los topics:
+
+- transactions-online
+- transactions-pos
+- transactions-aggregated
+- alerts
+- transactions-dlq
+
+
+Flink UI:
+
+http://localhost:8081
+
+Sirve para revisar que el Job de Flink esté corriendo.
+
+
+Kibana:
+
+http://localhost:5601
+
+Sirve para la parte de visualización.
+
+
+============================================================
+12. COMANDOS ÚTILES DE VERIFICACIÓN
+============================================================
+
+Ver los topics de Kafka:
+
+docker compose exec kafka kafka-topics.sh --bootstrap-server localhost:9094 --list
+
+Ver mensajes del topic ONLINE:
+
+docker compose exec kafka kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic transactions-online --from-beginning --max-messages 5
+
+Ver mensajes del topic POS:
+
+docker compose exec kafka kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic transactions-pos --from-beginning --max-messages 5
+
+Ver mensajes agregados:
+
+docker compose exec kafka kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic transactions-aggregated --from-beginning --max-messages 10
+
+
+============================================================
+13. SI SALE ERROR CON TIMESTAMP_LTZ(6)
+============================================================
+
+Error posible:
+
+Invalid data type of time field for watermark definition.
+The supported precision is from 0 to 3.
+
+Solución:
+
+El archivo flink/aggregation.sql debe usar event_timestamp como STRING y crear una columna calculada event_time como TIMESTAMP(3).
+
+Debe existir algo parecido a:
+
+event_time AS CAST(
+    REPLACE(SUBSTRING(event_timestamp, 1, 23), 'T', ' ')
+    AS TIMESTAMP(3)
+)
+
+Y el watermark debe aplicarse sobre event_time:
+
+WATERMARK FOR event_time AS event_time - INTERVAL '5' SECOND
+
+
+============================================================
+14. SI NO SALEN MENSAJES EN transactions-aggregated
+============================================================
+
+Revisa lo siguiente:
+
+1. Que los productores ONLINE y POS estén corriendo.
+2. Que haya pasado al menos 1 minuto.
+3. Que el Job de Flink haya generado un Job ID.
+4. Que el topic correcto sea transactions-aggregated.
+5. Que Kafka esté corriendo.
+6. Que el bootstrap dentro de Docker sea kafka:9094.
+7. Que el comando de consumo use localhost:9094 dentro del contenedor Kafka.
+
+
+============================================================
+15. DETENER TODO
+============================================================
+
+Para detener los contenedores sin borrar datos:
+
+docker compose down
+
+Para detener y borrar los volúmenes/datos:
+
+docker compose down -v
+
+
+============================================================
+16. ARCHIVOS IMPORTANTES DE ESTA PARTE
+============================================================
+
+flink/Dockerfile
+- Construye la imagen de Flink con el conector de Kafka.
+
+flink/aggregation.sql
+- Contiene el Job SQL de Flink.
+- Lee transactions-online y transactions-pos.
+- Aplica ventana tumbling de 1 minuto.
+- Calcula conteos, promedio y máximo.
+- Publica en transactions-aggregated.
+
+docker-compose.yaml
+- Levanta Kafka, Flink, Elasticsearch, Kibana y Kafka UI.
+
+scripts/create_topics.sh
+- Permite recrear topics manualmente si hace falta.
+
+docs/contract.md
+- Define el contrato de topics y mensajes.
+
+
+============================================================
+17. QUÉ DEMUESTRA ESTA PARTE
+============================================================
+
+Esta implementación demuestra el requerimiento R2.3:
+
+- Flink consume eventos desde Kafka.
+- Procesa eventos en tiempo real.
+- Usa ventana tumbling de 1 minuto.
+- Calcula count, avg y max.
+- Agrega también conteos por estado: APPROVED, REJECTED y PENDING.
+- Escribe los resultados en el topic transactions-aggregated.
+- Los resultados pueden ser consumidos por la capa de persistencia y dashboard.
+
+
+============================================================
+18. EVIDENCIAS RECOMENDADAS PARA LA SUSTENTACIÓN
+============================================================
+
+Tomar captura de:
+
+1. docker compose ps mostrando contenedores activos.
+2. Productor ONLINE con fallos=0 y tasa_real.
+3. Productor POS con fallos=0 y tasa_real.
+4. Terminal del Job de Flink mostrando el Job ID.
+5. Terminal mostrando mensajes JSON del topic transactions-aggregated.
+6. Kafka UI mostrando los topics.
+7. Flink UI mostrando el Job.

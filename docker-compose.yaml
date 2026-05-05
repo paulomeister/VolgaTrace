@@ -44,6 +44,42 @@ services:
       start_period: 10s
     networks:
       - streaming-net
+      
+  # Flink SQL Aggregation Job - automatic submitter
+  flink-aggregation-job:
+    image: volgatrace-flink:1.18.1
+    container_name: flink-aggregation-job
+    restart: "no"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      flink-jobmanager:
+        condition: service_healthy
+      flink-taskmanager:
+        condition: service_started
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        rest.address: flink-jobmanager
+        rest.port: 8081
+    volumes:
+      - ./flink:/opt/flink/usrlib
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo "Waiting for Flink and Kafka to be ready..."
+        sleep 20
+        echo "Submitting Flink aggregation SQL job..."
+        ./bin/sql-client.sh \
+          -Drest.address=flink-jobmanager \
+          -Drest.port=8081 \
+          -f /opt/flink/usrlib/aggregation.sql
+    networks:
+      - streaming-net
 
   # one-shot: crea los topics y termina
   kafka-init:
@@ -58,6 +94,7 @@ services:
       TOPICS: >-
         transactions-online:3:86400000
         transactions-pos:3:86400000
+        transactions-aggregated:3:86400000
         alerts:3:86400000
         transactions-dlq:3:86400000
       BOOTSTRAP: kafka:9094
@@ -106,9 +143,13 @@ services:
     networks:
       - streaming-net
 
+
   # Processing Layer: Master node
   flink-jobmanager:
-    image: flink:1.18.1-scala_2.12-java17
+    build:
+      context: ./flink
+      dockerfile: Dockerfile
+    image: volgatrace-flink:1.18.1
     container_name: flink-jobmanager
     restart: unless-stopped
     ports:
@@ -125,12 +166,17 @@ services:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
+    volumes:
+      - ./flink:/opt/flink/usrlib
     networks:
       - streaming-net
 
   # Processing Layer: Worker node
   flink-taskmanager:
-    image: flink:1.18.1-scala_2.12-java17
+    build:
+      context: ./flink
+      dockerfile: Dockerfile
+    image: volgatrace-flink:1.18.1
     container_name: flink-taskmanager
     restart: unless-stopped
     depends_on:
