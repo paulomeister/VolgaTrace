@@ -70,9 +70,8 @@ The generator deliberately injects detectable patterns:
 1. **Unusually high amount** (~5%): `amount` between 10,000 and 50,000.
 2. **Same-card burst** (~3%): 5 consecutive transactions with the same
    `card_id` within a short interval.
-3. **Rejected transactions** (~12%): `status="REJECTED"` in normal distribution
-   — combined with partition ordering, enables detecting the rule
-   "3 rejections + 1 approval".
+3. **Declined approval pattern** (~2%): 4 consecutive transactions for the same
+   `card_id` with statuses `REJECTED`, `REJECTED`, `REJECTED`, `APPROVED`.
 
 ## Invalid Messages for the DLQ (for R2.8)
 
