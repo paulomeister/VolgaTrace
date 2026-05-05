@@ -9,11 +9,15 @@ import org.apache.flink.api.common.time.Time;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.UUID;
 
 public class AmountAnomalyFn extends KeyedProcessFunction<String, Event, Alert> {
+
+    private static final Logger log = LoggerFactory.getLogger(AmountAnomalyFn.class);
 
     private transient ValueState<Long> countState;
     private transient ValueState<Double> meanState;
@@ -52,17 +56,19 @@ public class AmountAnomalyFn extends KeyedProcessFunction<String, Event, Alert> 
         // code for static amount threshold business rule enforcement
         boolean isStaticAnomaly = false;
 
-        if ("USD".equalsIgnoreCase(currency) && amount > 5_000) {
+        if ("USD".equalsIgnoreCase(currency) && amount > 15_000) {
             isStaticAnomaly = true;
         }
-        else if ("EUR".equalsIgnoreCase(currency) && amount > 5_000) {
+        else if ("EUR".equalsIgnoreCase(currency) && amount > 15_000) {
             isStaticAnomaly = true;
         }
-        else if ("COP".equalsIgnoreCase(currency) && amount > 15_000_000) {
+        else if ("COP".equalsIgnoreCase(currency) && amount > 50_000_000) {
             isStaticAnomaly = true;
         }
 
         if (isStaticAnomaly) {
+            log.info("HIGH_AMOUNT detected: cardId={} amount={} currency={}",
+                    event.getCardId(), amount, currency);
             out.collect(new Alert(
                     UUID.randomUUID().toString(),
                     event.getCardId(),
@@ -103,6 +109,8 @@ public class AmountAnomalyFn extends KeyedProcessFunction<String, Event, Alert> 
             double zScore = (std > 0) ? Math.abs((amount - mu) / std) : 0.0;
 
             if (zScore >= 3.0) {
+                log.info("HIGH_AMOUNT (zScore) detected: cardId={} amount={} zScore={}",
+                        event.getCardId(), amount, zScore);
                 out.collect(new Alert(
                         UUID.randomUUID().toString(),
                         event.getCardId(),
