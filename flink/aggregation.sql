@@ -34,13 +34,19 @@ CREATE TABLE aggregation_results (
     channel STRING,
     currency STRING,
     merchant_category STRING,
-    city STRING,
+
     transaction_count BIGINT,
     approved_count BIGINT,
     rejected_count BIGINT,
     pending_count BIGINT,
+
+    distinct_city_count BIGINT,
+    distinct_card_count BIGINT,
+
     avg_amount DOUBLE,
-    max_amount DOUBLE
+    min_amount DOUBLE,
+    max_amount DOUBLE,
+    total_amount DOUBLE
 ) WITH (
     'connector' = 'kafka',
     'topic' = 'transactions-aggregated',
@@ -55,13 +61,19 @@ SELECT
     channel,
     currency,
     merchant_category,
-    city,
+
     COUNT(*) AS transaction_count,
     SUM(CASE WHEN status = 'APPROVED' THEN 1 ELSE 0 END) AS approved_count,
     SUM(CASE WHEN status = 'REJECTED' THEN 1 ELSE 0 END) AS rejected_count,
     SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) AS pending_count,
+
+    COUNT(DISTINCT city) AS distinct_city_count,
+    COUNT(DISTINCT card_id) AS distinct_card_count,
+
     AVG(amount) AS avg_amount,
-    MAX(amount) AS max_amount
+    MIN(amount) AS min_amount,
+    MAX(amount) AS max_amount,
+    SUM(amount) AS total_amount
 FROM TABLE(
     TUMBLE(TABLE transactions, DESCRIPTOR(event_time), INTERVAL '1' MINUTE)
 )
@@ -75,5 +87,4 @@ GROUP BY
     window_end,
     channel,
     currency,
-    merchant_category,
-    city;
+    merchant_category;
