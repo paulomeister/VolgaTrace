@@ -1,0 +1,125 @@
+package com.streaming.fraud.functions;
+
+import com.streaming.fraud.model.Alert;
+import com.streaming.fraud.model.Event;
+import org.apache.flink.api.common.state.StateTtlConfig;
+import org.apache.flink.api.common.state.ValueState;
+import org.apache.flink.api.common.state.ValueStateDescriptor;
+import org.apache.flink.api.common.time.Time;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
+import org.apache.flink.util.Collector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.Instant;
+import java.util.UUID;
+
+public class AmountAnomalyFn extends KeyedProcessFunction<String, Event, Alert> {
+
+    private static final Logger log = LoggerFactory.getLogger(AmountAnomalyFn.class);
+
+    private transient ValueState<Long> countState;
+    private transient ValueState<Double> meanState;
+    private transient ValueState<Double> m2State;
+
+    @Override
+    public void open(Configuration parameters) throws Exception {
+
+        // ttl to prune inactive cards from memory
+        StateTtlConfig ttlConfig = StateTtlConfig.newBuilder(Time.days(7))
+                .setUpdateType(StateTtlConfig.UpdateType.OnCreateAndWrite)
+                .build();
+
+        ValueStateDescriptor<Long> countDesc = new ValueStateDescriptor<>("count", Long.class);
+        countDesc.enableTimeToLive(ttlConfig);
+        countState = getRuntimeContext().getState(countDesc);
+
+        ValueStateDescriptor<Double> meanDesc = new ValueStateDescriptor<>("mean", Double.class);
+        meanDesc.enableTimeToLive(ttlConfig);
+        meanState = getRuntimeContext().getState(meanDesc);
+
+        ValueStateDescriptor<Double> m2Desc = new ValueStateDescriptor<>("m2", Double.class);
+        m2Desc.enableTimeToLive(ttlConfig);
+        m2State = getRuntimeContext().getState(m2Desc);
+
+    }
+
+    @Override
+    public void processElement(Event event, KeyedProcessFunction<String, Event, Alert>.Context ctx, Collector<Alert> out) throws Exception {
+
+        Double amount = event.getAmount();
+        String currency = event.getCurrency();
+
+        if (amount == null) return;
+
+        // code for static amount threshold business rule enforcement
+        boolean isStaticAnomaly = false;
+
+        if ("USD".equalsIgnoreCase(currency) && amount > 15_000) {
+            isStaticAnomaly = true;
+        }
+        else if ("EUR".equalsIgnoreCase(currency) && amount > 15_000) {
+            isStaticAnomaly = true;
+        }
+        else if ("COP".equalsIgnoreCase(currency) && amount > 50_000_000) {
+            isStaticAnomaly = true;
+        }
+
+        if (isStaticAnomaly) {
+            log.info("HIGH_AMOUNT detected: cardId={} amount={} currency={}",
+                    event.getCardId(), amount, currency);
+            out.collect(new Alert(
+                    UUID.randomUUID().toString(),
+                    event.getCardId(),
+                    "HIGH_AMOUNT",
+                    Instant.now(),
+                    event.getTransactionId()
+            ));
+
+            return;
+        }
+
+        // Welford algorithm
+        Long currentCount = countState.value();
+        Double currentMean = meanState.value();
+        Double currentM2 = m2State.value();
+
+        long n = (currentCount == null) ? 0L : currentCount;
+        double mu = (currentMean == null) ? 0L : currentMean;
+        double m2 = (currentM2 == null) ? 0L : currentM2;
+
+        // update
+        n++;
+        double delta = amount - mu;
+        mu += delta / n;
+        double delta2 = amount - mu;
+        m2 += delta * delta2;
+
+        countState.update(n);
+        meanState.update(mu);
+        m2State.update(m2);
+
+        // check Z-score upon 5 previous data for a given card
+        if (n > 5) {
+            double variance = m2 / (n - 1);
+            double std = Math.sqrt(variance);
+
+            // how many std is the amount away from the mean
+            double zScore = (std > 0) ? Math.abs((amount - mu) / std) : 0.0;
+
+            if (zScore >= 3.0) {
+                log.info("HIGH_AMOUNT (zScore) detected: cardId={} amount={} zScore={}",
+                        event.getCardId(), amount, zScore);
+                out.collect(new Alert(
+                        UUID.randomUUID().toString(),
+                        event.getCardId(),
+                        "HIGH_AMOUNT",
+                        Instant.now(),
+                        event.getTransactionId()
+                ));
+            }
+        }
+
+    }
+}
