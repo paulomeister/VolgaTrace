@@ -81,6 +81,51 @@ services:
     networks:
       - streaming-net
 
+  # Flink Java Anomalies Job - automatic submitter (one-shot)
+  flink-anomalies-job:
+    build:
+      context: ./flink
+      dockerfile: Dockerfile.anomalies
+    image: volgatrace-flink:1.18.1
+    container_name: flink-anomalies-job
+    restart: "no"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      flink-jobmanager:
+        condition: service_healthy
+      flink-taskmanager:
+        condition: service_started
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9094
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        rest.address: flink-jobmanager
+        rest.port: 8081
+    volumes:
+      - ./flink:/opt/flink/usrlib
+    command:
+      - /bin/bash
+      - -c
+      - |
+        set -euo pipefail
+        echo "Waiting for Flink and Kafka to be ready..."
+        sleep 20
+        echo "Building Flink anomalies Java job..."
+        cd /opt/flink/usrlib/anomalies-job
+        mvn -DskipTests package
+        echo "Submitting Flink anomalies Java job..."
+        /opt/flink/bin/flink run \
+          -Drest.address=flink-jobmanager \
+          -Drest.port=8081 \
+          -c com.streaming.fraud.AnomaliesJob \
+          /opt/flink/usrlib/anomalies-job/target/anomalies-job-1.0-SNAPSHOT.jar
+    networks:
+      - streaming-net
+
   # one-shot: crea los topics y termina
   kafka-init:
     image: bitnamilegacy/kafka:3.7

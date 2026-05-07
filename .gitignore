@@ -31,7 +31,7 @@ venv/
 .mtj.tmp/
 
 # Package Files #
-*.jar
+flink/anomalies-job/target/
 *.war
 *.nar
 *.ear
