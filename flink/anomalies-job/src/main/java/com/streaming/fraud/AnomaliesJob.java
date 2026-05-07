@@ -35,14 +35,17 @@ import java.time.Duration;
 
 public class AnomaliesJob {
 
+    private static final String DEFAULT_BOOTSTRAP = "localhost:9092";
+
     public static void main(String[] args) throws Exception {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(); // flink environment.
 
         env.enableCheckpointing(60000); // fault tolerance for preserving state because of Welford algorithm.
         env.getConfig().setAutoWatermarkInterval(1000L);
+        String bootstrapServers = resolveBootstrapServers(args);
         KafkaSource<IngestRecord> source = KafkaSource.<IngestRecord>builder()
-                .setBootstrapServers("localhost:9092") // TODO: change port to docker internal
+                .setBootstrapServers(bootstrapServers)
                 .setTopics("transactions-online", "transactions-pos")
                 .setGroupId("fraud-detection-group")
                 .setStartingOffsets(OffsetsInitializer.latest())
@@ -57,6 +60,7 @@ public class AnomaliesJob {
 
         Logger log = LoggerFactory.getLogger(AnomaliesJob.class);
         log.info("Starting job with DLQ and schema validation");
+        log.info("Kafka bootstrap servers: {}", bootstrapServers);
 
         DataStream<IngestRecord> ingestStream = env.fromSource(
                 source,
@@ -95,7 +99,7 @@ public class AnomaliesJob {
         DataStream<String> dlqPayloads = invalidRecords.map(new DlqFormatFn());
 
         KafkaSink<String> dlqSink = KafkaSink.<String>builder()
-                .setBootstrapServers("localhost:9092") // TODO: change port to docker internal
+                .setBootstrapServers(bootstrapServers)
                 .setRecordSerializer(KafkaRecordSerializationSchema.builder()
                         .setTopic("transactions-dlq")
                         .setValueSerializationSchema(new SimpleStringSchema())
@@ -145,7 +149,7 @@ public class AnomaliesJob {
                 .union(freqAlerts);
 
         KafkaSink<Alert> sink = KafkaSink.<Alert>builder()
-                        .setBootstrapServers("localhost:9092") // TODO: change port to Docker internal
+                        .setBootstrapServers(bootstrapServers)
                         .setRecordSerializer(KafkaRecordSerializationSchema.builder()
                                 .setTopic("alerts")
                                 .setValueSerializationSchema(new AlertSerializer())
@@ -157,6 +161,28 @@ public class AnomaliesJob {
 
         env.execute("Fraud Detection, Anomalies Job"); // this throws Exception
 
+    }
+
+    private static String resolveBootstrapServers(String[] args) {
+        String envValue = System.getenv("KAFKA_BOOTSTRAP_SERVERS");
+        if (envValue != null && !envValue.trim().isEmpty()) {
+            return envValue.trim();
+        }
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                String arg = args[i];
+                if (arg == null) {
+                    continue;
+                }
+                if (arg.startsWith("--bootstrap.servers=")) {
+                    return arg.substring("--bootstrap.servers=".length());
+                }
+                if ("--bootstrap.servers".equals(arg) && i + 1 < args.length) {
+                    return args[i + 1];
+                }
+            }
+        }
+        return DEFAULT_BOOTSTRAP;
     }
 
 }
