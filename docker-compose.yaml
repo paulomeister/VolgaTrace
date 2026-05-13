@@ -338,3 +338,13 @@ networks:
   streaming-net:
     driver: bridge
     name: streaming-net
+
+  dashboard-init:
+  image: curlimages/curl:latest
+  container_name: dashboard-init
+  depends_on:
+    - kibana
+  volumes:
+    - ./docs:/dashboard
+    - ./init:/init
+  command: ["/bin/sh", "/init/kibana.sh"]
