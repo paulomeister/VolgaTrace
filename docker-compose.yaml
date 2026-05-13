@@ -86,7 +86,7 @@ services:
     build:
       context: ./flink
       dockerfile: Dockerfile.anomalies
-    image: volgatrace-flink:1.18.1
+    image: volgatrace-flink-anomalies:1.18.1
     container_name: flink-anomalies-job
     restart: "no"
     depends_on:
@@ -114,15 +114,12 @@ services:
         set -euo pipefail
         echo "Waiting for Flink and Kafka to be ready..."
         sleep 20
-        echo "Building Flink anomalies Java job..."
-        cd /opt/flink/usrlib/anomalies-job
-        mvn -DskipTests package
         echo "Submitting Flink anomalies Java job..."
-        /opt/flink/bin/flink run \
+        /opt/flink/bin/flink run -d \
           -Drest.address=flink-jobmanager \
           -Drest.port=8081 \
           -c com.streaming.fraud.AnomaliesJob \
-          /opt/flink/usrlib/anomalies-job/target/anomalies-job-1.0-SNAPSHOT.jar
+          /opt/flink/jobs/anomalies-job.jar
     networks:
       - streaming-net
 
@@ -188,6 +185,73 @@ services:
     networks:
       - streaming-net
 
+  producer-online:
+    build:
+      context: .
+      dockerfile: producers/Dockerfile
+    image: volgatrace-producers:1.0
+    container_name: producer-online
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      flink-jobmanager:
+        condition: service_healthy
+      flink-taskmanager:
+        condition: service_started
+      flink-aggregation-job:
+        condition: service_completed_successfully
+      flink-anomalies-job:
+        condition: service_completed_successfully
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    command:
+      - python
+      - producers/producer_online.py
+      - --bootstrap
+      - kafka:9094
+      - --rate
+      - ${PRODUCER_RATE:-50}
+    networks:
+      - streaming-net
+
+  producer-pos:
+    build:
+      context: .
+      dockerfile: producers/Dockerfile
+    image: volgatrace-producers:1.0
+    container_name: producer-pos
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      flink-jobmanager:
+        condition: service_healthy
+      flink-taskmanager:
+        condition: service_started
+      flink-aggregation-job:
+        condition: service_completed_successfully
+      flink-anomalies-job:
+        condition: service_completed_successfully
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    command:
+      - python
+      - producers/producer_pos.py
+      - --bootstrap
+      - kafka:9094
+      - --rate
+      - ${PRODUCER_RATE:-50}
+    networks:
+      - streaming-net
 
   # Processing Layer: Master node
   flink-jobmanager:
