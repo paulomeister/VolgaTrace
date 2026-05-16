@@ -10,3 +10,10 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 RUN curl -L -o /opt/flink/lib/flink-sql-connector-kafka-3.1.0-1.18.jar \
     https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.1.0-1.18/flink-sql-connector-kafka-3.1.0-1.18.jar
 
+WORKDIR /opt/flink/anomalies-build
+COPY anomalies-job/pom.xml ./pom.xml
+COPY anomalies-job/src ./src
+
+RUN mvn -DskipTests package \
+    && mkdir -p /opt/flink/jobs \
+    && cp target/anomalies-job-1.0-SNAPSHOT.jar /opt/flink/jobs/anomalies-job.jar
