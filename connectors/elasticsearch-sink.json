@@ -5,7 +5,7 @@
 
     "tasks.max": "1",
 
-    "topics": "transactions-online,transactions-pos,transactions-aggregated",
+    "topics": "transactions-online",
 
     "connection.url": "http://elasticsearch:9200",
 
@@ -13,10 +13,13 @@
 
     "schema.ignore": "true",
 
-    "type.name": "_doc",
-
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false",
 
-    "value.converter.schemas.enable": "false"
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+
+    "write.method": "INSERT",
+
+    "behavior.on.malformed.documents": "ignore"
   }
 }
