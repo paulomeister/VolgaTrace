@@ -31,6 +31,7 @@ CREATE TABLE transactions (
 CREATE TABLE aggregation_results (
     window_start STRING,
     window_end STRING,
+    event_timestamp STRING,
     channel STRING,
     currency STRING,
     merchant_category STRING,
@@ -58,6 +59,7 @@ INSERT INTO aggregation_results
 SELECT
     CAST(window_start AS STRING) AS window_start,
     CAST(window_end AS STRING) AS window_end,
+    CAST(window_end AS STRING) AS event_timestamp,
     channel,
     currency,
     merchant_category,
