@@ -1,0 +1,35 @@
+﻿2026-05-18 16:34:04,396 [INFO] producer-online: Iniciando: bootstrap=localhost:9092 topic=transactions-online rate=100 ev/s duration=120s
+2026-05-18 16:34:04,523 [INFO] producer-online: <BrokerConnection client_id=producer-online, node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: connecting to localhost:9092 [('::1', 9092, 0, 0) IPv6]
+2026-05-18 16:34:04,631 [INFO] producer-online: <BrokerConnection client_id=producer-online, node_id=bootstrap-0 host=localhost:9092 <checking_api_versions_recv> [IPv6 ('::1', 9092, 0, 0)]>: Broker version identified as 2.6
+2026-05-18 16:34:04,632 [INFO] producer-online: <BrokerConnection client_id=producer-online, node_id=bootstrap-0 host=localhost:9092 <connected> [IPv6 ('::1', 9092, 0, 0)]>: Connection complete.
+2026-05-18 16:34:04,852 [INFO] producer-online: <BrokerConnection client_id=producer-online, node_id=1 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: connecting to localhost:9092 [('::1', 9092, 0, 0) IPv6]
+2026-05-18 16:34:04,854 [INFO] producer-online: <BrokerConnection client_id=producer-online, node_id=1 host=localhost:9092 <connected> [IPv6 ('::1', 9092, 0, 0)]>: Connection complete.
+2026-05-18 16:34:04,855 [INFO] producer-online: <BrokerConnection client_id=producer-online, node_id=bootstrap-0 host=localhost:9092 <connected> [IPv6 ('::1', 9092, 0, 0)]>: Closing connection. 
+2026-05-18 16:34:09,637 [INFO] producer-online: Enviados=411 fallos=0 tasa_real=82.2 ev/s
+2026-05-18 16:34:14,641 [INFO] producer-online: Enviados=849 fallos=0 tasa_real=84.8 ev/s
+2026-05-18 16:34:19,643 [INFO] producer-online: Enviados=1289 fallos=0 tasa_real=85.9 ev/s
+2026-05-18 16:34:24,647 [INFO] producer-online: Enviados=1731 fallos=0 tasa_real=86.5 ev/s
+2026-05-18 16:34:29,648 [INFO] producer-online: Enviados=2153 fallos=0 tasa_real=86.1 ev/s
+2026-05-18 16:34:34,650 [INFO] producer-online: Enviados=2598 fallos=0 tasa_real=86.6 ev/s
+2026-05-18 16:34:39,654 [INFO] producer-online: Enviados=3053 fallos=0 tasa_real=87.2 ev/s
+2026-05-18 16:34:44,662 [INFO] producer-online: Enviados=3512 fallos=0 tasa_real=87.7 ev/s
+2026-05-18 16:34:49,668 [INFO] producer-online: Enviados=3969 fallos=0 tasa_real=88.1 ev/s
+2026-05-18 16:34:54,672 [INFO] producer-online: Enviados=4431 fallos=0 tasa_real=88.6 ev/s
+2026-05-18 16:34:59,674 [INFO] producer-online: Enviados=4891 fallos=0 tasa_real=88.9 ev/s
+2026-05-18 16:35:04,682 [INFO] producer-online: Enviados=5344 fallos=0 tasa_real=89.0 ev/s
+2026-05-18 16:35:09,690 [INFO] producer-online: Enviados=5802 fallos=0 tasa_real=89.2 ev/s
+2026-05-18 16:35:14,696 [INFO] producer-online: Enviados=6263 fallos=0 tasa_real=89.4 ev/s
+2026-05-18 16:35:19,698 [INFO] producer-online: Enviados=6723 fallos=0 tasa_real=89.6 ev/s
+2026-05-18 16:35:24,706 [INFO] producer-online: Enviados=7182 fallos=0 tasa_real=89.7 ev/s
+2026-05-18 16:35:29,710 [INFO] producer-online: Enviados=7640 fallos=0 tasa_real=89.8 ev/s
+2026-05-18 16:35:34,711 [INFO] producer-online: Enviados=8099 fallos=0 tasa_real=89.9 ev/s
+2026-05-18 16:35:39,722 [INFO] producer-online: Enviados=8559 fallos=0 tasa_real=90.0 ev/s
+2026-05-18 16:35:44,731 [INFO] producer-online: Enviados=9012 fallos=0 tasa_real=90.0 ev/s
+2026-05-18 16:35:49,732 [INFO] producer-online: Enviados=9462 fallos=0 tasa_real=90.0 ev/s
+2026-05-18 16:35:54,740 [INFO] producer-online: Enviados=9918 fallos=0 tasa_real=90.1 ev/s
+2026-05-18 16:35:59,745 [INFO] producer-online: Enviados=10378 fallos=0 tasa_real=90.2 ev/s
+2026-05-18 16:36:04,655 [INFO] producer-online: Duracion alcanzada (120s). Saliendo.
+2026-05-18 16:36:04,709 [INFO] producer-online: Vaciando buffer pendiente...
+2026-05-18 16:36:04,749 [INFO] producer-online: <KafkaProducer client_id=producer-online transactional_id=None>: Closing the Kafka producer with 5 secs timeout.
+2026-05-18 16:36:04,779 [INFO] producer-online: <BrokerConnection client_id=producer-online, node_id=1 host=localhost:9092 <connected> [IPv6 ('::1', 9092, 0, 0)]>: Closing connection. 
+2026-05-18 16:36:04,871 [INFO] producer-online: Fin. Total enviados=10823 fallos=0 duracion=120.2s tasa_promedio=90.0 ev/s

@@ -1,0 +1,108 @@
+﻿CP-11 - Throughput incremental
+
+Configuration:
+Escalon 1: 100 ONLINE + 100 POS = 200 events/s configured
+Escalon 2: 150 ONLINE + 150 POS = 300 events/s configured
+Escalon 3: 200 ONLINE + 200 POS = 400 events/s configured
+Duration per step: 120 seconds
+
+Results:
+Escalon 1:
+Configured ONLINE: 100 events/s
+Configured POS: 100 events/s
+Configured total: 200 events/s
+Duration: 120 seconds
+
+ONLINE:
+Total sent: 10823
+Failures: 0
+Average rate: 90 events/s
+
+POS:
+Total sent: 10812
+Failures: N/A
+Average rate: 89.9 events/s
+
+Combined:
+Total events: 21635
+Combined throughput by producer rate: 179.9 events/s
+Combined throughput by total/duration: 180.29 events/s
+Configured compliance: 89.95 %
+Gap vs configured rate: 20.1 events/s
+Status: Stable with moderate degradation
+
+Logs:
+ONLINE log: C:\Users\villo\VolgaTrace\docs\evidence\cp11_step1_online_log.txt
+POS log: C:\Users\villo\VolgaTrace\docs\evidence\cp11_step1_pos_log.txt
+
+Escalon 2:
+Configured ONLINE: 150 events/s
+Configured POS: 150 events/s
+Configured total: 300 events/s
+Duration: 120 seconds
+
+ONLINE:
+Total sent: 13489
+Failures: 0
+Average rate: 112.4 events/s
+
+POS:
+Total sent: 13494
+Failures: N/A
+Average rate: 112.4 events/s
+
+Combined:
+Total events: 26983
+Combined throughput by producer rate: 224.8 events/s
+Combined throughput by total/duration: 224.86 events/s
+Configured compliance: 74.93 %
+Gap vs configured rate: 75.2 events/s
+Status: Degraded
+
+Logs:
+ONLINE log: C:\Users\villo\VolgaTrace\docs\evidence\cp11_step2_online_log.txt
+POS log: C:\Users\villo\VolgaTrace\docs\evidence\cp11_step2_pos_log.txt
+
+Escalon 3:
+Configured ONLINE: 200 events/s
+Configured POS: 200 events/s
+Configured total: 400 events/s
+Duration: 120 seconds
+
+ONLINE:
+Total sent: 16920
+Failures: 0
+Average rate: 140.9 events/s
+
+POS:
+Total sent: 16914
+Failures: N/A
+Average rate: 140.9 events/s
+
+Combined:
+Total events: 33834
+Combined throughput by producer rate: 281.8 events/s
+Combined throughput by total/duration: 281.95 events/s
+Configured compliance: 70.45 %
+Gap vs configured rate: 118.2 events/s
+Status: Degraded
+
+Logs:
+ONLINE log: C:\Users\villo\VolgaTrace\docs\evidence\cp11_step3_online_log.txt
+POS log: C:\Users\villo\VolgaTrace\docs\evidence\cp11_step3_pos_log.txt
+
+Conclusion:
+Maximum sustained throughput observed: 281.8 events/s
+Maximum step observed: Escalon 3
+Final result: PASSED
+
+Degradation notes:
+Escalon 1: compliance 89.95% with gap 20.1 events/s.
+Escalon 2: compliance 74.93% with gap 75.2 events/s.
+Escalon 3: compliance 70.45% with gap 118.2 events/s.
+
+Technical observation:
+The producers generate realistic traffic, including a small proportion of anomalies and invalid records. Therefore, messages may also appear in alerts, transactions-dlq and transactions-aggregated while Flink jobs are running. This does not invalidate CP-11 because the objective is to evaluate incremental throughput and stability under increasing load.
+
+Acceptance criterion:
+The test is useful and accepted if it identifies the approximate sustained throughput and the degradation point while the system remains stable at least in the first incremental step.

@@ -1,0 +1,28 @@
+CP-04 - High amount anomaly alert validation test
+Execution date: 2026-05-16 19:05:41
+Repository root: C:\Users\villo\VolgaTrace
+
+Objective:
+Validate that a controlled transaction with amount=20000.00 and currency=USD generates a HIGH_AMOUNT alert in Kafka topic 'alerts'.
+
+Command executed:
+docker compose up -d kafka kafka-ui flink-jobmanager flink-taskmanager flink-anomalies-job
+
+Input event written to:
+C:\Users\villo\VolgaTrace\docs\evidence\cp04_input_event.txt
+
+Input event:
+4532015112830366|{"transaction_id":"cp04-high-amount-001","card_id":"4532015112830366","event_timestamp":"2026-05-16T17:30:00.000000+00:00","produced_at":"2026-05-16T17:30:00.000000+00:00","channel":"ONLINE","amount":20000.00,"currency":"USD","status":"APPROVED","merchant_name":"CP04 Test Merchant","merchant_category":"electronics","city":"Bogota","country":"CO"}
+
+Producer command executed successfully.
+Kafka topic input: transactions-online
+Producer output log: C:\Users\villo\VolgaTrace\docs\evidence\cp04_producer_output_log.txt
+
+Validation command executed:
+docker exec kafka kafka-console-consumer.sh --bootstrap-server kafka:9094 --topic alerts --from-beginning --max-messages 5 --timeout-ms 15000
+
+Alerts validation log:
+C:\Users\villo\VolgaTrace\docs\evidence\cp04_alerts_validation_log.txt
+
+CP-04 validation: PASSED
+HIGH_AMOUNT alert found for transaction cp04-high-amount-001.

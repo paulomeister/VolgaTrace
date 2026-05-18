@@ -1,0 +1,4 @@
+﻿step,online_configured_rate,pos_configured_rate,configured_total_rate,duration_seconds,online_total_sent,online_failures,online_average_rate,pos_total_sent,pos_failures,pos_average_rate,total_events,combined_throughput_by_rate,combined_throughput_by_total,configured_compliance_percent,gap_vs_configured_events_per_second,status
+Escalon 1,100,100,200,120,10823,0,90,10812,N/A,89.9,21635,179.9,180.29,89.95,20.1,Stable with moderate degradation
+Escalon 2,150,150,300,120,13489,0,112.4,13494,N/A,112.4,26983,224.8,224.86,74.93,75.2,Degraded
+Escalon 3,200,200,400,120,16920,0,140.9,16914,N/A,140.9,33834,281.8,281.95,70.45,118.2,Degraded

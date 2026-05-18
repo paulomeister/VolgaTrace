@@ -1,0 +1,23 @@
+﻿{"alert_id":"269d9ed2-e6f2-42c4-b69b-0e49fe42851d","card_id":"4532015112831001","alert_type":"HIGH_AMOUNT","triggered_at":1779125618.414572001,"source_transaction_id":"cp10-latency-001"}
+{"alert_id":"7ec77505-80b9-4e97-ba2a-dce8268cd71a","card_id":"4532015112831002","alert_type":"HIGH_AMOUNT","triggered_at":1779125620.611595139,"source_transaction_id":"cp10-latency-002"}
+{"alert_id":"5e28c4fe-7b98-4c69-86f3-4b4059cfce56","card_id":"4532015112831003","alert_type":"HIGH_AMOUNT","triggered_at":1779125623.305876142,"source_transaction_id":"cp10-latency-003"}
+{"alert_id":"b8b19949-0ee6-40ad-bf2a-f3953eb0c12a","card_id":"4532015112831004","alert_type":"HIGH_AMOUNT","triggered_at":1779125626.114597734,"source_transaction_id":"cp10-latency-004"}
+{"alert_id":"98559f6d-18d6-4e44-93f4-844c2692734b","card_id":"4532015112831005","alert_type":"HIGH_AMOUNT","triggered_at":1779125628.216257178,"source_transaction_id":"cp10-latency-005"}
+{"alert_id":"1c33937c-5cd6-484b-8ca2-f6d4d2732c09","card_id":"4532015112831006","alert_type":"HIGH_AMOUNT","triggered_at":1779125630.319296475,"source_transaction_id":"cp10-latency-006"}
+{"alert_id":"c69e1f6b-aa44-4531-a88b-b89acd4c29ae","card_id":"4532015112831007","alert_type":"HIGH_AMOUNT","triggered_at":1779125632.924148269,"source_transaction_id":"cp10-latency-007"}
+{"alert_id":"63ae6026-cd52-47d4-a2d8-3e5d2e7f1d20","card_id":"4532015112831008","alert_type":"HIGH_AMOUNT","triggered_at":1779125634.927692597,"source_transaction_id":"cp10-latency-008"}
+{"alert_id":"c3651a43-dcf0-4db2-aee2-48a3b4390914","card_id":"4532015112831009","alert_type":"HIGH_AMOUNT","triggered_at":1779125636.831573452,"source_transaction_id":"cp10-latency-009"}
+{"alert_id":"34b063fb-0b9b-4bec-8364-d5ee6bd5e126","card_id":"4532015112831010","alert_type":"HIGH_AMOUNT","triggered_at":1779125639.235193962,"source_transaction_id":"cp10-latency-010"}
+{"alert_id":"dafaa515-d1be-4d38-b833-7c964bf2780a","card_id":"4532015112831011","alert_type":"HIGH_AMOUNT","triggered_at":1779125641.139011075,"source_transaction_id":"cp10-latency-011"}
+{"alert_id":"66d4ac35-3270-4e2d-8b93-4d634f752d8b","card_id":"4532015112831012","alert_type":"HIGH_AMOUNT","triggered_at":1779125643.441382244,"source_transaction_id":"cp10-latency-012"}
+{"alert_id":"f1707dfa-a825-4b22-8bfc-b66189c20280","card_id":"4532015112831013","alert_type":"HIGH_AMOUNT","triggered_at":1779125645.847917297,"source_transaction_id":"cp10-latency-013"}
+{"alert_id":"5ac16a66-8e61-4682-bca7-cb36d30d2786","card_id":"4532015112831014","alert_type":"HIGH_AMOUNT","triggered_at":1779125647.650307730,"source_transaction_id":"cp10-latency-014"}
+{"alert_id":"efec2400-8d72-4cba-b281-aa9f566ebf86","card_id":"4532015112831015","alert_type":"HIGH_AMOUNT","triggered_at":1779125649.553649403,"source_transaction_id":"cp10-latency-015"}
+{"alert_id":"29af73f1-8a62-4b9b-8c7e-9d4a7db0c524","card_id":"4532015112831016","alert_type":"HIGH_AMOUNT","triggered_at":1779125652.449304459,"source_transaction_id":"cp10-latency-016"}
+{"alert_id":"58f82efa-3a3c-45b4-a858-625f26fa8f17","card_id":"4532015112831017","alert_type":"HIGH_AMOUNT","triggered_at":1779125654.753307288,"source_transaction_id":"cp10-latency-017"}
+{"alert_id":"76d3bdc5-fa31-4f82-a125-011cc960b465","card_id":"4532015112831018","alert_type":"HIGH_AMOUNT","triggered_at":1779125656.655968215,"source_transaction_id":"cp10-latency-018"}
+{"alert_id":"2e3f172f-77b5-408e-a7b5-cafac16ed94a","card_id":"4532015112831019","alert_type":"HIGH_AMOUNT","triggered_at":1779125658.759479881,"source_transaction_id":"cp10-latency-019"}
+{"alert_id":"a8b4b573-6f55-4aea-b7e9-b9604304bd8a","card_id":"4532015112831020","alert_type":"HIGH_AMOUNT","triggered_at":1779125660.763888870,"source_transaction_id":"cp10-latency-020"}
+
+Processed a total of 20 messages
+

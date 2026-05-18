@@ -1,0 +1,31 @@
+CP-07 - DLQ invalid message validation test
+Execution date: 2026-05-16 22:04:41
+Repository root: C:\Users\villo\VolgaTrace
+
+Objective:
+Validate that an invalid transaction message is routed to Kafka topic 'transactions-dlq'.
+
+Invalid message reason:
+The message is missing required field 'card_id' and has amount='not-a-number'.
+
+Command executed:
+docker compose up -d kafka kafka-ui flink-jobmanager flink-taskmanager flink-anomalies-job
+
+Invalid message written to:
+C:\Users\villo\VolgaTrace\docs\evidence\cp07_input_invalid_message.txt
+
+Invalid message:
+cp07-invalid-key|{"transaction_id":"cp07-invalid-001","amount":"not-a-number","broken":true}
+
+Producer command executed successfully.
+Kafka topic input: transactions-online
+Producer output log: C:\Users\villo\VolgaTrace\docs\evidence\cp07_producer_output_log.txt
+
+Validation command executed:
+docker exec kafka kafka-console-consumer.sh --bootstrap-server kafka:9094 --topic transactions-dlq --from-beginning --max-messages 10 --timeout-ms 15000
+
+DLQ validation log:
+C:\Users\villo\VolgaTrace\docs\evidence\cp07_dlq_validation_log.txt
+
+CP-07 validation: PASSED
+Invalid message was routed to transactions-dlq.

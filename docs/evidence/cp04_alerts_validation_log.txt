@@ -1,0 +1,2 @@
+{"alert_id":"8a4bffdc-6a6b-4b72-abc1-709dbec27bd3","card_id":"4532015112830366","alert_type":"HIGH_AMOUNT","triggered_at":1778976411.170874720,"source_transaction_id":"cp04-high-amount-001"}
+Processed a total of 1 messages

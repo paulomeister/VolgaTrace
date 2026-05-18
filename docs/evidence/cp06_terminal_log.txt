@@ -1,0 +1,35 @@
+CP-06 - Brute force / DECLINED_PATTERN anomaly alert validation test
+Execution date: 2026-05-16 21:23:31
+Repository root: C:\Users\villo\VolgaTrace
+
+Objective:
+Validate that the sequence REJECTED, REJECTED, REJECTED, APPROVED for the same card_id generates a DECLINED_PATTERN alert.
+
+Important note:
+A final watermark-advance event is sent with a later timestamp because, in the manual execution, the CEP output required event-time progress before the alert appeared.
+
+Command executed:
+docker compose up -d kafka kafka-ui flink-jobmanager flink-taskmanager flink-anomalies-job
+
+Input events written to:
+C:\Users\villo\VolgaTrace\docs\evidence\cp06_input_events.txt
+
+Input events:
+4532015112830666|{"transaction_id":"cp06-bruteforce-001","card_id":"4532015112830666","event_timestamp":"2026-05-16T18:10:01.000000+00:00","produced_at":"2026-05-16T18:10:01.000000+00:00","channel":"ONLINE","amount":100.00,"currency":"COP","status":"REJECTED","merchant_name":"CP06 Test Merchant","merchant_category":"electronics","city":"Bogota","country":"CO"}
+4532015112830666|{"transaction_id":"cp06-bruteforce-002","card_id":"4532015112830666","event_timestamp":"2026-05-16T18:10:02.000000+00:00","produced_at":"2026-05-16T18:10:02.000000+00:00","channel":"ONLINE","amount":101.00,"currency":"COP","status":"REJECTED","merchant_name":"CP06 Test Merchant","merchant_category":"electronics","city":"Bogota","country":"CO"}
+4532015112830666|{"transaction_id":"cp06-bruteforce-003","card_id":"4532015112830666","event_timestamp":"2026-05-16T18:10:03.000000+00:00","produced_at":"2026-05-16T18:10:03.000000+00:00","channel":"ONLINE","amount":102.00,"currency":"COP","status":"REJECTED","merchant_name":"CP06 Test Merchant","merchant_category":"electronics","city":"Bogota","country":"CO"}
+4532015112830666|{"transaction_id":"cp06-bruteforce-004","card_id":"4532015112830666","event_timestamp":"2026-05-16T18:10:04.000000+00:00","produced_at":"2026-05-16T18:10:04.000000+00:00","channel":"ONLINE","amount":103.00,"currency":"COP","status":"APPROVED","merchant_name":"CP06 Test Merchant","merchant_category":"electronics","city":"Bogota","country":"CO"}
+4532015112830666|{"transaction_id":"cp06-watermark-advance-001","card_id":"4532015112830666","event_timestamp":"2026-05-16T18:10:20.000000+00:00","produced_at":"2026-05-16T18:10:20.000000+00:00","channel":"ONLINE","amount":104.00,"currency":"COP","status":"APPROVED","merchant_name":"CP06 Test Merchant","merchant_category":"electronics","city":"Bogota","country":"CO"}
+
+Producer command executed successfully.
+Kafka topic input: transactions-online
+Producer output log: C:\Users\villo\VolgaTrace\docs\evidence\cp06_producer_output_log.txt
+
+Validation command executed:
+docker exec kafka kafka-console-consumer.sh --bootstrap-server kafka:9094 --topic alerts --from-beginning --max-messages 10 --timeout-ms 15000
+
+Alerts validation log:
+C:\Users\villo\VolgaTrace\docs\evidence\cp06_alerts_validation_log.txt
+
+CP-06 validation: PASSED
+DECLINED_PATTERN alert found for card_id 4532015112830666.

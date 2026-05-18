@@ -1,0 +1,39 @@
+CP-08 - Pipeline continuity after invalid message test
+Execution date: 2026-05-17 12:30:38
+Repository root: C:\Users\villo\VolgaTrace
+
+Objective:
+Validate that the pipeline processes a valid event before an error, routes an invalid message to DLQ, and continues processing a valid event after the error.
+
+Sequence:
+1. Valid HIGH_AMOUNT event before error.
+2. Invalid message routed to transactions-dlq.
+3. Valid HIGH_AMOUNT event after error.
+
+Command executed:
+docker compose up -d kafka kafka-ui flink-jobmanager flink-taskmanager flink-anomalies-job
+
+Input messages written to:
+C:\Users\villo\VolgaTrace\docs\evidence\cp08_input_messages.txt
+
+Input messages:
+4532015112830877|{"transaction_id":"cp08-valid-before-error-001","card_id":"4532015112830877","event_timestamp":"2026-05-16T18:30:01.000000+00:00","produced_at":"2026-05-16T18:30:01.000000+00:00","channel":"ONLINE","amount":20000.00,"currency":"USD","status":"APPROVED","merchant_name":"CP08 Valid Before Merchant","merchant_category":"electronics","city":"Bogota","country":"CO"}
+cp08-invalid-key|{"transaction_id":"cp08-invalid-001","amount":"not-a-number","broken":true}
+4532015112830888|{"transaction_id":"cp08-valid-after-error-001","card_id":"4532015112830888","event_timestamp":"2026-05-16T18:30:10.000000+00:00","produced_at":"2026-05-16T18:30:10.000000+00:00","channel":"ONLINE","amount":20000.00,"currency":"USD","status":"APPROVED","merchant_name":"CP08 Valid After Merchant","merchant_category":"electronics","city":"Bogota","country":"CO"}
+
+Producer command executed successfully.
+Kafka topic input: transactions-online
+Producer output log: C:\Users\villo\VolgaTrace\docs\evidence\cp08_producer_output_log.txt
+
+DLQ validation command executed:
+docker exec kafka kafka-console-consumer.sh --bootstrap-server kafka:9094 --topic transactions-dlq --from-beginning --max-messages 10 --timeout-ms 15000
+DLQ validation log:
+C:\Users\villo\VolgaTrace\docs\evidence\cp08_dlq_validation_log.txt
+
+Alerts validation command executed:
+docker exec kafka kafka-console-consumer.sh --bootstrap-server kafka:9094 --topic alerts --from-beginning --max-messages 10 --timeout-ms 15000
+Alerts validation log:
+C:\Users\villo\VolgaTrace\docs\evidence\cp08_alerts_validation_log.txt
+
+CP-08 validation: PASSED
+Pipeline processed valid event before error, routed invalid message to DLQ, and processed valid event after error.
