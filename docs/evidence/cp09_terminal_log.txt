@@ -1,0 +1,33 @@
+CP-09 - Minimum sustained throughput validation test
+Execution date: 2026-05-18 10:57:30
+Repository root: C:\Users\villo\VolgaTrace
+
+Objective:
+Validate that ONLINE + POS producers sustain at least 100 events/s combined.
+
+Configuration:
+ONLINE producer rate: 60 events/s
+POS producer rate: 60 events/s
+Duration: 120 seconds
+Minimum accepted combined throughput: 100 events/s
+
+Command executed:
+docker compose up -d kafka kafka-ui flink-jobmanager flink-taskmanager flink-anomalies-job flink-aggregation-job
+
+Initial Kafka offsets collected.
+Online total offset before: 36551
+POS total offset before: 13759
+
+Producer commands executed successfully.
+ONLINE log: C:\Users\villo\VolgaTrace\docs\evidence\cp09_online_terminal_log.txt
+POS log: C:\Users\villo\VolgaTrace\docs\evidence\cp09_pos_terminal_log.txt
+
+Final Kafka offsets collected.
+Online delta: 6590
+POS delta: 6593
+Total delta: 13183
+Kafka offset-based throughput: 109.86 events/s
+
+CP-09 validation result: PASSED
+Combined producer throughput: 109.8 events/s
+Summary file: C:\Users\villo\VolgaTrace\docs\evidence\cp09_throughput_summary.txt

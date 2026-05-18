@@ -1,0 +1,2 @@
+{"raw":"{\"transaction_id\":\"cp08-invalid-001\",\"amount\":\"not-a-number\",\"broken\":true}","error":"missing-or-invalid-field: card_id","topic":"transactions-online","partition":2,"offset":11304,"key":"cp08-invalid-key","receivedAt":"2026-05-17T17:31:46.532604462Z"}
+Processed a total of 1 messages

@@ -1,0 +1,55 @@
+﻿CP-02 - ProducciÃ³n de eventos POS vÃ¡lidos
+Execution date: 2026-05-18 17:41:49
+Repository root: C:\Users\villo\VolgaTrace
+
+Objective:
+Verify that the POS producer publishes messages into topic transactions-pos.
+
+Configuration:
+Producer: producers/producer_pos.py
+Topic: transactions-pos
+Rate: 50 events/s
+Duration: 60 seconds
+
+Command executed:
+docker compose up -d kafka kafka-ui
+
+Initial Kafka offsets collected.
+Total offset before: 150199
+
+POS producer executed successfully.
+Producer log: C:\Users\villo\VolgaTrace\docs\evidence\cp02_pos_producer_log.txt
+
+Final Kafka offsets collected.
+Total offset after: 153007
+Total new messages according to offsets: 2808
+
+Producer metrics:
+Total sent: 2808
+Failures: N/A
+Average rate: 46.8 events/s
+
+Validation summary:
+CP-02 - POS producer validation summary
+
+Topic: transactions-pos
+Producer: producers/producer_pos.py
+Configured rate: 50 events/s
+Duration: 60 seconds
+
+Producer result:
+Total sent: 2808
+Failures: N/A
+Average rate: 46.8 events/s
+Final line: 2026-05-18 17:43:25,038 [INFO] producer-pos: Fin. Total enviados=2808 duracion=60.0s tasa_promedio=46.8 ev/s
+
+Kafka offsets:
+Total before: 150199
+Total after: 153007
+Delta: 2808
+
+Acceptance criterion:
+The test passes if the POS producer finishes successfully and Kafka receives new messages in topic transactions-pos.
+
+Result:
+PASSED

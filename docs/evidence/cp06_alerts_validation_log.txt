@@ -1,0 +1,2 @@
+{"alert_id":"11805988-bd68-48e4-a1a7-0ccbe0ed6215","card_id":"4532015112830666","alert_type":"DECLINED_PATTERN","triggered_at":1778984709.639518615,"source_transaction_id":"cp06-bruteforce-004"}
+Processed a total of 1 messages

@@ -1,0 +1,35 @@
+﻿2026-05-18 16:37:10,185 [INFO] producer-pos: Iniciando: bootstrap=localhost:9092 topic=transactions-pos rate=150 ev/s
+2026-05-18 16:37:10,217 [INFO] producer-pos: <BrokerConnection client_id=producer-pos, node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: connecting to localhost:9092 [('::1', 9092, 0, 0) IPv6]
+2026-05-18 16:37:10,285 [INFO] producer-pos: <BrokerConnection client_id=producer-pos, node_id=bootstrap-0 host=localhost:9092 <checking_api_versions_recv> [IPv6 ('::1', 9092, 0, 0)]>: Broker version identified as 2.6
+2026-05-18 16:37:10,287 [INFO] producer-pos: <BrokerConnection client_id=producer-pos, node_id=bootstrap-0 host=localhost:9092 <connected> [IPv6 ('::1', 9092, 0, 0)]>: Connection complete.
+2026-05-18 16:37:10,508 [INFO] producer-pos: <BrokerConnection client_id=producer-pos, node_id=1 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: connecting to localhost:9092 [('::1', 9092, 0, 0) IPv6]
+2026-05-18 16:37:10,509 [INFO] producer-pos: <BrokerConnection client_id=producer-pos, node_id=1 host=localhost:9092 <connected> [IPv6 ('::1', 9092, 0, 0)]>: Connection complete.
+2026-05-18 16:37:10,511 [INFO] producer-pos: <BrokerConnection client_id=producer-pos, node_id=bootstrap-0 host=localhost:9092 <connected> [IPv6 ('::1', 9092, 0, 0)]>: Closing connection. 
+2026-05-18 16:37:15,294 [INFO] producer-pos: Enviados=548 fallos=0 tasa_real=109.5 ev/s
+2026-05-18 16:37:20,297 [INFO] producer-pos: Enviados=1112 fallos=0 tasa_real=111.1 ev/s
+2026-05-18 16:37:25,300 [INFO] producer-pos: Enviados=1693 fallos=0 tasa_real=112.8 ev/s
+2026-05-18 16:37:30,307 [INFO] producer-pos: Enviados=2296 fallos=0 tasa_real=114.7 ev/s
+2026-05-18 16:37:35,310 [INFO] producer-pos: Enviados=2898 fallos=0 tasa_real=115.8 ev/s
+2026-05-18 16:37:40,313 [INFO] producer-pos: Enviados=3438 fallos=0 tasa_real=114.5 ev/s
+2026-05-18 16:37:45,318 [INFO] producer-pos: Enviados=3995 fallos=0 tasa_real=114.1 ev/s
+2026-05-18 16:37:50,322 [INFO] producer-pos: Enviados=4526 fallos=0 tasa_real=113.1 ev/s
+2026-05-18 16:37:55,326 [INFO] producer-pos: Enviados=5028 fallos=0 tasa_real=111.6 ev/s
+2026-05-18 16:38:00,333 [INFO] producer-pos: Enviados=5598 fallos=0 tasa_real=111.9 ev/s
+2026-05-18 16:38:05,340 [INFO] producer-pos: Enviados=6199 fallos=0 tasa_real=112.6 ev/s
+2026-05-18 16:38:10,342 [INFO] producer-pos: Enviados=6742 fallos=0 tasa_real=112.3 ev/s
+2026-05-18 16:38:15,349 [INFO] producer-pos: Enviados=7197 fallos=0 tasa_real=110.6 ev/s
+2026-05-18 16:38:20,349 [INFO] producer-pos: Enviados=7659 fallos=0 tasa_real=109.3 ev/s
+2026-05-18 16:38:25,353 [INFO] producer-pos: Enviados=8107 fallos=0 tasa_real=108.0 ev/s
+2026-05-18 16:38:30,365 [INFO] producer-pos: Enviados=8550 fallos=0 tasa_real=106.8 ev/s
+2026-05-18 16:38:35,368 [INFO] producer-pos: Enviados=9094 fallos=0 tasa_real=106.9 ev/s
+2026-05-18 16:38:40,375 [INFO] producer-pos: Enviados=9719 fallos=0 tasa_real=107.9 ev/s
+2026-05-18 16:38:45,380 [INFO] producer-pos: Enviados=10345 fallos=0 tasa_real=108.8 ev/s
+2026-05-18 16:38:50,381 [INFO] producer-pos: Enviados=10973 fallos=0 tasa_real=109.6 ev/s
+2026-05-18 16:38:55,382 [INFO] producer-pos: Enviados=11613 fallos=0 tasa_real=110.5 ev/s
+2026-05-18 16:39:00,384 [INFO] producer-pos: Enviados=12232 fallos=0 tasa_real=111.1 ev/s
+2026-05-18 16:39:05,386 [INFO] producer-pos: Enviados=12867 fallos=0 tasa_real=111.8 ev/s
+2026-05-18 16:39:10,375 [INFO] producer-pos: Duracion alcanzada (120s). Saliendo.
+2026-05-18 16:39:10,375 [INFO] producer-pos: Vaciando buffer pendiente...
+2026-05-18 16:39:10,377 [INFO] producer-pos: <KafkaProducer client_id=producer-pos transactional_id=None>: Closing the Kafka producer with 5 secs timeout.
+2026-05-18 16:39:10,378 [INFO] producer-pos: <BrokerConnection client_id=producer-pos, node_id=1 host=localhost:9092 <connected> [IPv6 ('::1', 9092, 0, 0)]>: Closing connection. 
+2026-05-18 16:39:10,383 [INFO] producer-pos: Fin. Total enviados=13494 duracion=120.1s tasa_promedio=112.4 ev/s

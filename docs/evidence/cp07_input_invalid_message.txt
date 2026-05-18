@@ -1,0 +1,1 @@
+cp07-invalid-key|{"transaction_id":"cp07-invalid-001","amount":"not-a-number","broken":true}

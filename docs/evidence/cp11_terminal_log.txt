@@ -1,0 +1,64 @@
+﻿CP-11 - Incremental throughput validation test
+Execution date: 2026-05-18 16:32:51
+Repository root: C:\Users\villo\VolgaTrace
+
+Objective:
+Evaluate system behavior under incremental load and identify sustained throughput and degradation point.
+
+Command executed:
+docker compose up -d kafka kafka-ui flink-jobmanager flink-taskmanager flink-anomalies-job flink-aggregation-job
+
+
+Escalon 1
+ONLINE rate: 100 events/s
+POS rate: 100 events/s
+Configured total: 200 events/s
+Duration: 120 seconds
+ONLINE total sent: 10823
+ONLINE failures: 0
+ONLINE average rate: 90 events/s
+POS total sent: 10812
+POS failures: N/A
+POS average rate: 89.9 events/s
+Combined throughput: 179.9 events/s
+Configured compliance: 89.95 %
+Gap vs configured rate: 20.1 events/s
+Step status: Stable with moderate degradation
+
+Escalon 2
+ONLINE rate: 150 events/s
+POS rate: 150 events/s
+Configured total: 300 events/s
+Duration: 120 seconds
+ONLINE total sent: 13489
+ONLINE failures: 0
+ONLINE average rate: 112.4 events/s
+POS total sent: 13494
+POS failures: N/A
+POS average rate: 112.4 events/s
+Combined throughput: 224.8 events/s
+Configured compliance: 74.93 %
+Gap vs configured rate: 75.2 events/s
+Step status: Degraded
+
+Escalon 3
+ONLINE rate: 200 events/s
+POS rate: 200 events/s
+Configured total: 400 events/s
+Duration: 120 seconds
+ONLINE total sent: 16920
+ONLINE failures: 0
+ONLINE average rate: 140.9 events/s
+POS total sent: 16914
+POS failures: N/A
+POS average rate: 140.9 events/s
+Combined throughput: 281.8 events/s
+Configured compliance: 70.45 %
+Gap vs configured rate: 118.2 events/s
+Step status: Degraded
+
+CP-11 final result: PASSED
+Maximum sustained throughput observed: 281.8 events/s
+Maximum step observed: Escalon 3
+Summary file: C:\Users\villo\VolgaTrace\docs\evidence\cp11_incremental_results.txt
+CSV file: C:\Users\villo\VolgaTrace\docs\evidence\cp11_incremental_results.csv

@@ -1,0 +1,40 @@
+CP-09 - Throughput mínimo sostenido
+
+Configuration:
+ONLINE configured rate: 60 events/s
+POS configured rate: 60 events/s
+Configured total rate: 120 events/s
+Duration: 120 seconds
+Minimum accepted throughput: 100 events/s
+
+Producer ONLINE:
+Total sent: 6590
+Failures: 0
+Average rate: 54.9 events/s
+Final line: 2026-05-18 11:00:56,618 [INFO] producer-online: Fin. Total enviados=6590 fallos=0 duracion=120.1s tasa_promedio=54.9 ev/s
+
+Producer POS:
+Total sent: 6593
+Failures: N/A
+Average rate: 54.9 events/s
+Final line: 2026-05-18 11:00:56,619 [INFO] producer-pos: Fin. Total enviados=6593 duracion=120.1s tasa_promedio=54.9 ev/s
+
+Combined result from producer logs:
+Total sent: 13183
+Combined average throughput: 109.8 events/s
+Combined throughput from total/duration: 109.86 events/s
+
+Kafka offsets:
+transactions-online delta: 6590
+transactions-pos delta: 6593
+Total Kafka delta: 13183
+Kafka offset-based throughput: 109.86 events/s
+
+Criterion:
+PASS if combined average throughput >= 100 events/s
+
+Result:
+PASSED
+
+Technical observation:
+The producers simulate realistic traffic and may generate a small percentage of invalid messages and anomaly-triggering events. Therefore, if Flink jobs are running, messages may also appear in transactions-dlq, alerts and transactions-aggregated. This does not invalidate CP-09 because the objective is to validate input throughput in transactions-online and transactions-pos.
