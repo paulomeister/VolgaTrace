@@ -397,6 +397,7 @@ services:
     networks:
       - streaming-net
 
+
   # Visualization Layer
   kibana:
     image: docker.elastic.co/kibana/kibana:8.15.0
@@ -426,3 +427,4 @@ networks:
   streaming-net:
     driver: bridge
     name: streaming-net
+
