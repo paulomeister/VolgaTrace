@@ -1,0 +1,2 @@
+{"alert_id":"b7dbf7d0-6d8a-4867-b41a-5b63aa817b88","card_id":"4532015112830999","alert_type":"BURST","triggered_at":1778979938.578011222,"source_transaction_id":"cp05-burst-006"}
+Processed a total of 1 messages

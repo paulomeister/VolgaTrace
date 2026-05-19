@@ -1,0 +1,1 @@
+4532015112830366|{"transaction_id":"cp04-high-amount-001","card_id":"4532015112830366","event_timestamp":"2026-05-16T17:30:00.000000+00:00","produced_at":"2026-05-16T17:30:00.000000+00:00","channel":"ONLINE","amount":20000.00,"currency":"USD","status":"APPROVED","merchant_name":"CP04 Test Merchant","merchant_category":"electronics","city":"Bogota","country":"CO"}

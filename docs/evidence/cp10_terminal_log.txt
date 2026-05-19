@@ -1,0 +1,70 @@
+﻿CP-10 - End-to-end latency validation for HIGH_AMOUNT alerts
+Execution date: 2026-05-18 12:32:31
+Repository root: C:\Users\villo\VolgaTrace
+
+Objective:
+Validate that valid HIGH_AMOUNT transactions generate alerts with average end-to-end latency below 3000 ms.
+
+Measurement:
+latency_ms = (triggered_at - produced_at_epoch) * 1000
+
+Configuration:
+Samples: 20
+Input topic: transactions-online
+Alerts topic: alerts
+Amount: 20000.00
+Currency: USD
+
+Command executed:
+docker compose up -d kafka kafka-ui flink-jobmanager flink-taskmanager flink-anomalies-job
+
+
+ Container kafka Running 
+ Container flink-jobmanager Running 
+ Container flink-taskmanager Running 
+ Container kafka-ui Running 
+ Container kafka Waiting 
+ Container flink-jobmanager Waiting 
+ Container flink-jobmanager Healthy 
+ Container kafka Healthy 
+ Container kafka-init Starting 
+ Container kafka-init Started 
+ Container kafka Waiting 
+ Container kafka-init Waiting 
+ Container kafka Waiting 
+ Container kafka-init Waiting 
+ Container flink-jobmanager Waiting 
+ Container kafka Healthy 
+ Container flink-jobmanager Healthy 
+ Container kafka Healthy 
+ Container kafka-init Exited 
+ Container kafka-init Exited 
+ Container flink-anomalies-job Starting 
+ Container flink-anomalies-job Started 
+
+Input events written to:
+C:\Users\villo\VolgaTrace\docs\evidence\cp10_input_events.txt
+
+Producer command executed successfully.
+Producer output log:
+C:\Users\villo\VolgaTrace\docs\evidence\cp10_producer_output_log.txt
+
+Alerts validation command executed:
+docker exec kafka kafka-console-consumer.sh --bootstrap-server kafka:9094 --topic alerts --from-beginning --max-messages 20 --timeout-ms 20000
+Alerts validation log:
+C:\Users\villo\VolgaTrace\docs\evidence\cp10_alerts_validation_log.txt
+
+Latency results:
+C:\Users\villo\VolgaTrace\docs\evidence\cp10_latency_results.csv
+Latency summary:
+C:\Users\villo\VolgaTrace\docs\evidence\cp10_latency_summary.txt
+
+CP-10 - Latency summary
+
+Samples expected: 20
+Samples matched: 20
+Min latency ms: 1346.84
+Avg latency ms: 1877.70
+Max latency ms: 4013.55
+Criterion: average latency < 3000 ms
+Result: PASSED

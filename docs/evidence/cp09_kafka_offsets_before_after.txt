@@ -1,0 +1,37 @@
+CP-09 Kafka offsets before execution
+
+Topic: transactions-online
+Offsets before:
+partition=0 offset=12018
+partition=1 offset=10782
+partition=2 offset=13751
+Total before: 36551
+
+Topic: transactions-pos
+Offsets before:
+partition=0 offset=4543
+partition=1 offset=4081
+partition=2 offset=5135
+Total before: 13759
+
+
+CP-09 Kafka offsets after execution
+
+Topic: transactions-online
+Offsets after:
+partition=0 offset=14183
+partition=1 offset=12770
+partition=2 offset=16188
+Total after: 43141
+Delta: 6590
+
+Topic: transactions-pos
+Offsets after:
+partition=0 offset=6710
+partition=1 offset=6069
+partition=2 offset=7573
+Total after: 20352
+Delta: 6593
+
+Total delta: 13183
+Offset-based throughput: 109.86 events/s
