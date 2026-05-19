@@ -92,12 +92,17 @@ def main() -> int:
         return 1
 
     generator = TransactionGenerator(channel="ONLINE")
+    if args.rate <= 0:
+        log.error("rate debe ser mayor que 0")
+        return 1
+
     period = 1.0 / args.rate
 
     sent = 0
     failures = 0
     start = time.monotonic()
     last_log = start
+    next_send = start
 
     def on_send_error(exc):
         nonlocal failures
@@ -126,7 +131,12 @@ def main() -> int:
                 )
                 last_log = now
 
-            time.sleep(period)
+            next_send += period
+            sleep_for = next_send - time.monotonic()
+            if sleep_for > 0:
+                time.sleep(sleep_for)
+            else:
+                next_send = time.monotonic()
     finally:
         log.info("Vaciando buffer pendiente...")
         producer.flush(timeout=10)
