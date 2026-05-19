@@ -1,5 +1,5 @@
 {
-  "index_patterns": ["transactions-*"],
+  "index_patterns": ["transactions-*", "alerts"],
   "priority": 100,
   "template": {
     "settings": {
@@ -17,10 +17,38 @@
         "merchant_category": { "type": "keyword" },
         "currency": { "type": "keyword" },
         "status": { "type": "keyword" },
+        "alert_id": { "type": "keyword" },
+        "alert_type": { "type": "keyword" },
+        "source_transaction_id": { "type": "keyword" },
 
         "amount": { "type": "float" },
+        "avg_amount": { "type": "float" },
+        "min_amount": { "type": "float" },
+        "max_amount": { "type": "float" },
+        "total_amount": { "type": "float" },
+        "transaction_count": { "type": "long" },
+        "approved_count": { "type": "long" },
+        "rejected_count": { "type": "long" },
+        "pending_count": { "type": "long" },
+        "distinct_city_count": { "type": "long" },
+        "distinct_card_count": { "type": "long" },
 
         "event_timestamp": {
+          "type": "date",
+          "format": "strict_date_optional_time||yyyy-MM-dd HH:mm:ss.SSS||epoch_millis"
+        },
+
+        "window_start": {
+          "type": "date",
+          "format": "strict_date_optional_time||yyyy-MM-dd HH:mm:ss.SSS||epoch_millis"
+        },
+
+        "window_end": {
+          "type": "date",
+          "format": "strict_date_optional_time||yyyy-MM-dd HH:mm:ss.SSS||epoch_millis"
+        },
+
+        "triggered_at": {
           "type": "date"
         },
 
