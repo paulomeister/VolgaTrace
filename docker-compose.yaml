@@ -209,6 +209,8 @@ services:
         condition: service_healthy
       kibana:
         condition: service_healthy
+      connect-init:
+        condition: service_completed_successfully
     command:
       - python
       - producers/producer_online.py
@@ -243,6 +245,8 @@ services:
         condition: service_healthy
       kibana:
         condition: service_healthy
+      connect-init:
+        condition: service_completed_successfully
     command:
       - python
       - producers/producer_pos.py
@@ -322,9 +326,7 @@ services:
     volumes:
       - ./init/connectors.sh:/connectors.sh:ro
     entrypoint: ["/bin/sh", "/connectors.sh"]
-
     restart: "no"
-
     networks:
       - streaming-net
 
@@ -427,4 +429,3 @@ networks:
   streaming-net:
     driver: bridge
     name: streaming-net
-

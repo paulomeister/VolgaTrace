@@ -10,7 +10,6 @@ echo "Kafka Connect listo"
 
 echo "Recreando connector Elasticsearch..."
 
-curl -s -X DELETE http://kafka-connect:8083/connectors/elasticsearch-sink >/dev/null || true
 curl -s -X DELETE http://kafka-connect:8083/connectors/elasticsearch-results-sink >/dev/null || true
 
 curl -X POST http://kafka-connect:8083/connectors \
