@@ -1,0 +1,33 @@
+{
+  "index_patterns": ["transactions-*"],
+  "priority": 100,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    },
+    "mappings": {
+      "properties": {
+        "transaction_id": { "type": "keyword" },
+        "card_id": { "type": "keyword" },
+        "country": { "type": "keyword" },
+        "city": { "type": "keyword" },
+        "channel": { "type": "keyword" },
+        "merchant_name": { "type": "keyword" },
+        "merchant_category": { "type": "keyword" },
+        "currency": { "type": "keyword" },
+        "status": { "type": "keyword" },
+
+        "amount": { "type": "float" },
+
+        "event_timestamp": {
+          "type": "date"
+        },
+
+        "produced_at": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}

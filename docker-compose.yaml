@@ -253,7 +253,149 @@ services:
     networks:
       - streaming-net
 
+  # Kafka Connect
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:7.6.1
+    container_name: kafka-connect
+    restart: unless-stopped
+
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+    ports:
+      - "8083:8083"
+
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9094
+
+      CONNECT_REST_PORT: 8083
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+
+      CONNECT_GROUP_ID: connect-cluster
+
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+
+      CONNECT_PLUGIN_PATH: /usr/share/confluent-hub-components
+
+    command:
+      - bash
+      - -c
+      - |
+        confluent-hub install --no-prompt confluentinc/kafka-connect-elasticsearch:15.1.2 && \
+        /etc/confluent/docker/run
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/connectors"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - streaming-net
   # Processing Layer: Master node
+
+  dashboard-init:
+    image: curlimages/curl:8.7.1
+    container_name: dashboard-init
+
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+      kafka-connect:
+        condition: service_started
+
+    volumes:
+      - ./dashboard:/dashboard
+      - ./init/kibana.sh:/kibana.sh:ro
+
+    entrypoint: ["/bin/sh", "/kibana.sh"]
+
+    restart: "no"
+
+    networks:
+      - streaming-net
+
+
+  connect-init:
+    image: curlimages/curl:8.7.1
+    container_name: connect-init
+
+    depends_on:
+      kafka-connect:
+        condition: service_healthy
+
+      elasticsearch:
+        condition: service_healthy
+
+    volumes:
+      - ./init/connectors.sh:/connectors.sh
+
+    entrypoint: ["/bin/sh", "/connectors.sh"]
+
+    restart: "no"
+
+    networks:
+      - streaming-net
+
+  elasticsearch-init:
+    image: curlimages/curl:latest
+    container_name: elasticsearch-init
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./init:/init
+    command: sh /init/kibana.sh
+    networks:
+      - streaming-net
+
+  kibana-init:
+    image: curlimages/curl:latest
+    depends_on:
+      - kibana
+    volumes:
+      - ./dashboard:/dashboard
+      - ./kibana/import.sh:/import.sh
+    entrypoint: sh /import.sh
+    networks:
+      - streaming-net
+
+  bootstrap:
+    image: curlimages/curl:8.7.1
+    container_name: bootstrap
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kafka-connect:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./init:/init
+      - ./dashboard:/dashboard
+    entrypoint: ["/bin/sh", "/init/bootstrap.sh"]
+    restart: "no"
+    networks:
+      - streaming-net
+
+        
   flink-jobmanager:
     build:
       context: ./flink
@@ -323,6 +465,7 @@ services:
     networks:
       - streaming-net
 
+
   # Visualization Layer
   kibana:
     image: docker.elastic.co/kibana/kibana:8.15.0
@@ -352,3 +495,4 @@ networks:
   streaming-net:
     driver: bridge
     name: streaming-net
+
